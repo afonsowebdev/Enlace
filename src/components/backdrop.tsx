@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
+import { useInviteOpened } from "./envelope-intro";
 
 /**
- * Fundo do convite: raminhos pintados a cobalto, como na louça portuguesa,
+ * Fundo do convite: raminhos pintados a vinho, como na louça portuguesa,
  * um véu de cor suave e grão de papel. Fica fixo atrás do conteúdo e
  * mexe-se devagar com o scroll.
  */
@@ -20,19 +21,19 @@ export function Backdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(60rem 40rem at 85% -10%, var(--esmalte), transparent 70%), radial-gradient(50rem 36rem at -10% 110%, var(--rubor), transparent 70%)",
+            "radial-gradient(60rem 40rem at 85% -10%, var(--linho), transparent 70%), radial-gradient(50rem 36rem at -10% 110%, var(--rubor), transparent 70%)",
         }}
       />
 
       <motion.div
-        className="absolute -top-10 -right-24 w-[26rem] text-cobalto opacity-[0.22] sm:-right-10 sm:w-[34rem] lg:right-[4vw]"
+        className="absolute -top-10 -right-24 w-[26rem] text-vinho opacity-[0.22] sm:-right-10 sm:w-[34rem] lg:right-[4vw]"
         style={{ y: yTop, rotate: rotTop }}
       >
         <Sprig variant={0} />
       </motion.div>
 
       <motion.div
-        className="absolute -bottom-24 -left-28 w-[24rem] text-cobalto opacity-[0.18] sm:-left-12 sm:w-[32rem] lg:left-[3vw]"
+        className="absolute -bottom-24 -left-28 w-[24rem] text-vinho opacity-[0.18] sm:-left-12 sm:w-[32rem] lg:left-[3vw]"
         style={{ y: yBottom, rotate: rotBottom }}
       >
         <Sprig variant={1} flip />
@@ -111,8 +112,17 @@ function buildSprig(variant: number) {
 
 const BUILT = [buildSprig(0), buildSprig(1)];
 
-function Sprig({ variant, flip = false }: { variant: number; flip?: boolean }) {
+export function Sprig({
+  variant,
+  flip = false,
+  blossomColor = "var(--dourado)",
+}: {
+  variant: number;
+  flip?: boolean;
+  blossomColor?: string;
+}) {
   const { stem, parts } = BUILT[variant];
+  const opened = useInviteOpened();
   return (
     <svg viewBox="0 0 400 400" className={`h-auto w-full ${flip ? "-scale-x-100" : ""}`} fill="none">
       <motion.path
@@ -121,19 +131,19 @@ function Sprig({ variant, flip = false }: { variant: number; flip?: boolean }) {
         strokeWidth={1.2}
         strokeLinecap="round"
         initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
+        animate={{ pathLength: opened ? 1 : 0 }}
         transition={{ duration: 2.2, ease: [0.65, 0, 0.35, 1], delay: 0.4 }}
       />
       {parts.map((d, i) => (
         <motion.path
           key={i}
           d={d}
-          stroke="currentColor"
+          stroke={i >= parts.length - 10 ? blossomColor : "currentColor"}
           strokeWidth={1}
           strokeLinecap="round"
           strokeLinejoin="round"
           initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
+          animate={opened ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
           transition={{ duration: 1.1, ease: "easeOut", delay: 0.9 + i * 0.045 }}
         />
       ))}

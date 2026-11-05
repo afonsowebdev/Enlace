@@ -83,8 +83,8 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
             return (
               <label
                 key={opt.label}
-                className={`flex cursor-pointer items-center justify-center rounded-md border px-4 py-3 text-center font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cobalto ${
-                  selected ? "border-cobalto bg-esmalte text-cobalto" : "border-nevoa hover:border-pedra"
+                className={`flex cursor-pointer items-center justify-center rounded-md border px-4 py-3 text-center font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vinho ${
+                  selected ? "border-vinho bg-linho text-vinho" : "border-nevoa hover:border-pedra"
                 }`}
               >
                 <input
@@ -112,7 +112,7 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
           <div className="mt-3 inline-flex items-center rounded-full border border-nevoa" role="group" aria-labelledby="rsvp-acomp">
             <button
               type="button"
-              className="size-11 rounded-full text-xl text-cobalto disabled:text-nevoa"
+              className="size-11 rounded-full text-xl text-vinho disabled:text-nevoa"
               onClick={() => setCompanions((c) => Math.max(0, c - 1))}
               disabled={companions === 0}
               aria-label="Menos uma pessoa"
@@ -124,7 +124,7 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
             </output>
             <button
               type="button"
-              className="size-11 rounded-full text-xl text-cobalto disabled:text-nevoa"
+              className="size-11 rounded-full text-xl text-vinho disabled:text-nevoa"
               onClick={() => setCompanions((c) => Math.min(maxCompanions, c + 1))}
               disabled={companions === maxCompanions}
               aria-label="Mais uma pessoa"

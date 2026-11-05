@@ -41,7 +41,7 @@ export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
   return (
     <div>
       {!registered && (
-        <p className="mb-8 rounded-md bg-esmalte px-4 py-3 text-sm">
+        <p className="mb-8 rounded-md bg-linho px-4 py-3 text-sm">
           Para reservar um presente ou contribuir, <a href="#resposta" className={buttonLink}>responde primeiro ao convite</a>.
         </p>
       )}
@@ -104,7 +104,7 @@ function ItemRow({
           <p className="text-sm text-pedra">Já reservado</p>
         ) : isMine ? (
           <div className="flex items-center gap-3" aria-live="polite">
-            <p className="text-sm font-medium text-cobalto">Reservado por ti</p>
+            <p className="text-sm font-medium text-vinho">Reservado por ti</p>
             <button type="button" className={`text-sm ${buttonLink}`} onClick={onToggle}>
               Cancelar
             </button>
@@ -160,7 +160,7 @@ function MoneyRow({
               ? `Objetivo atingido: ${formatEuros(gift.contributedCents)}`
               : `${formatEuros(gift.contributedCents)} de ${formatEuros(goal)}`
             : `${formatEuros(gift.contributedCents)} oferecidos até agora`}
-          {myTotal > 0 && <span className="text-cobalto"> (incluindo os teus {formatEuros(myTotal)})</span>}
+          {myTotal > 0 && <span className="text-vinho"> (incluindo os teus {formatEuros(myTotal)})</span>}
         </p>
       </div>
 
@@ -192,7 +192,7 @@ function ContributionForm({
 
   return (
     <form
-      className="mt-6 space-y-6 rounded-lg bg-esmalte p-5"
+      className="mt-6 space-y-6 rounded-lg bg-linho p-5"
       onSubmit={(e) => {
         e.preventDefault();
         if (valid) onContribute(cents);
@@ -211,7 +211,7 @@ function ContributionForm({
                 setCustom("");
               }}
               className={`rounded-full border px-4 py-2 font-medium tabular-nums transition-colors ${
-                amount === v ? "border-cobalto bg-porcelana text-cobalto" : "border-nevoa bg-porcelana hover:border-pedra"
+                amount === v ? "border-vinho bg-papel text-vinho" : "border-nevoa bg-papel hover:border-pedra"
               }`}
             >
               {formatEuros(v)}
@@ -236,7 +236,7 @@ function ContributionForm({
 
       <fieldset>
         <legend className="font-medium">Como vais pagar?</legend>
-        <div className="mt-3 inline-flex rounded-full border border-nevoa bg-porcelana p-1">
+        <div className="mt-3 inline-flex rounded-full border border-nevoa bg-papel p-1">
           {payment.mbwayPhone && (
             <MethodOption label="MB WAY" selected={method === "mbway"} onSelect={() => setMethod("mbway")} />
           )}
@@ -286,7 +286,7 @@ function MethodOption({ label, selected, onSelect }: { label: string; selected: 
       aria-pressed={selected}
       onClick={onSelect}
       className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-        selected ? "bg-cobalto text-sobre-cobalto" : "bg-transparent text-pedra hover:text-tinta"
+        selected ? "bg-vinho text-sobre-vinho" : "bg-transparent text-pedra hover:text-tinta"
       }`}
     >
       {label}

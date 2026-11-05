@@ -10,6 +10,8 @@ type ArchPhotoProps = {
   /** "load": abre ao carregar a página. "scroll": abre quando chega ao ecrã. */
   trigger?: "load" | "scroll";
   priority?: boolean;
+  /** Com trigger "load": só abre quando for true (ex.: depois do envelope). */
+  play?: boolean;
   className?: string;
   sizes?: string;
 };
@@ -39,6 +41,7 @@ export function ArchPhoto({
   alt,
   trigger = "scroll",
   priority = false,
+  play = true,
   className = "",
   sizes = "(min-width: 640px) 34rem, 90vw",
 }: ArchPhotoProps) {
@@ -48,18 +51,18 @@ export function ArchPhoto({
 
   const start =
     trigger === "load"
-      ? { initial: "hidden", animate: "shown", transition: { delayChildren: 0.6 } }
+      ? { initial: "hidden", animate: play ? "shown" : "hidden", transition: { delayChildren: 0.6 } }
       : { initial: "hidden", whileInView: "shown", viewport: { once: true, amount: 0.3 } };
 
   return (
     <motion.div ref={ref} className={`relative ${className}`} {...start}>
-      <motion.div variants={curtain} className="arco absolute inset-0 overflow-hidden bg-esmalte">
+      <motion.div variants={curtain} className="arco absolute inset-0 overflow-hidden bg-linho">
         <motion.div className="absolute inset-[-10%]" style={{ y }}>
           <motion.div variants={zoom} className="absolute inset-0">
             <Image src={src} alt={alt} fill priority={priority} sizes={sizes} className="object-cover" />
           </motion.div>
         </motion.div>
-        {/* filete fino, como o contorno pintado numa peça de porcelana */}
+        {/* filete fino, como o filete dourado de um cartão de convite */}
         <span aria-hidden="true" className="arco pointer-events-none absolute inset-2 border border-white/45" />
       </motion.div>
     </motion.div>

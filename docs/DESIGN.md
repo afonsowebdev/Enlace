@@ -2,70 +2,47 @@
 
 ## Ideia
 
-**Enlace** quer dizer união e também laço, entrelaçar. O site inteiro nasce dessa palavra: **um único fio azul-cobalto** que se enlaça entre os nomes dos noivos e depois desce pela página, ligando cada passo do convidado (vir, oferecer, partilhar memórias). É o único elemento ousado; tudo à volta é calmo e disciplinado.
+**Enlace** quer dizer união e também laço. Um **fio vinho** enlaça-se entre os nomes dos noivos e desce pela página, ligando cada passo do convidado; em cada secção há um nó que se acende quando o convidado lá chega.
 
-A cor vem da **porcelana e do azulejo portugueses**: branco frio de louça com tinta azul-cobalto, a cor do "algo azul" das noivas. Nada de creme, dourado ou terracota.
-
-## Revisão do plano anterior
-
-O `PLANO.md` propunha papel creme `#F6F2EA`, serifa clássica (Cormorant) e datas como `12 · 06 · 2027`. Revisto porque:
-
-| Antes | Problema | Agora |
-|---|---|---|
-| Fundo creme + serifa de alto contraste | É a combinação mais típica de páginas geradas; não diz nada deste casamento | Branco porcelana frio + tinta cobalto, ligado à louça e ao azulejo portugueses |
-| Cormorant Garamond | Escolha por defeito em convites de casamento | **Italiana**: romana fina e estreita, elegante sem ser "convite genérico" |
-| `12 · 06 · 2027` | Pontos médios a juntar metadados são um tique de template | Frase normal: "Sábado, 12 de junho de 2027, às 16h00" |
-| Verde-sálvia como destaque | Decorativo, sem ligação ao tema | O próprio fio é o destaque: a cor só aparece onde há ligação ou ação |
+A direção visual segue o pedido dos noivos (05-11-2026), inspirada num convite de referência em **vinho e papel creme**: elegante, clássico, com flores e um ritual de abertura. O Enlace não copia esse modelo — usa as suas próprias peças: o fio, a letra Lamoric Rowen, raminhos desenhados em código e um envelope com selo de lacre.
 
 ## Cores
 
-| Nome | Hex | Uso |
-|---|---|---|
-| Porcelana | `#F7F8FB` | Fundo |
-| Tinta | `#18203A` | Texto principal (azul-tinta, não preto) |
-| Cobalto | `#2348B8` | O fio, botões principais, foco |
-| Pedra | `#5A6382` | Texto secundário |
-| Névoa | `#DCE2EE` | Linhas, contornos de campos |
-| Esmalte | `#E9EEFB` | Fundo de estados selecionados |
-
-Modo escuro, "porcelana à noite": fundo `#0F1527`, texto `#E6EAF4`, cobalto `#8AA4FF`, pedra `#A3ABC5`, névoa `#28304A`, esmalte `#18213D`.
+| Nome | Claro | Escuro ("vinho à noite") | Uso |
+|---|---|---|---|
+| Papel | `#F7F0E7` | `#1D0D11` | Fundo |
+| Tinta | `#3B1A1F` | `#F3E7E1` | Texto principal |
+| Vinho | `#6B1C26` | `#E3A3AC` | O fio, botões, cartão-convite |
+| Pedra | `#7D5F61` | `#BFA3A5` | Texto secundário |
+| Névoa | `#E5D6C6` | `#3A2228` | Linhas e contornos |
+| Linho | `#EFE4D6` | `#2A151A` | Fundos de painéis e estados selecionados |
+| Rubor | `#F1DCDC` | `#331820` | Véu de cor no fundo |
+| Dourado | `#B08A4F` | `#D2AD6E` | Filetes, "&", flores, selo |
 
 ## Tipografia
 
-- **Italiana** (só peso 400): nomes dos noivos e títulos de secção. Grande, com espaçamento ligeiramente aberto.
-- **Hanken Grotesk** (400, 500, 600): todo o resto: datas, formulários, botões, preços.
-- Escala (base 17 px, razão ~1,333): 13 · 17 · 22 · 30 · 40 · 53; nomes em `clamp(4.5rem, 19vw, 10rem)`.
-- Sem maiúsculas em etiquetas, sem palavras destacadas a itálico dentro de títulos, sem "eyebrows" por cima dos títulos.
+- **Lamoric Rowen** (HansCo Studio): só maiúsculas, decorativa — nomes dos noivos, títulos de secção, anos da história, dia do casamento. Ficheiro em `src/fonts/` (woff2). **Confirmar licença para uso web antes de publicar.**
+- **Poppins** (400, 500, 600): todo o texto normal — formulários, datas, botões, preços.
 
-## Composição
+## Ritmo da página
 
-Primeiro telemóvel (o link chega por WhatsApp). Coluna estreita (máx. 34 rem), **alinhada à esquerda**. O fio corre numa margem à esquerda e passa por um pequeno nó em cada secção; como essas secções são mesmo uma sequência (o percurso do convidado), o nó tem significado.
+1. **Envelope** (ecrã inteiro, vinho com pétalas a subir): selo de lacre com as iniciais. "Abrir convite" → o selo parte, a aba abre, o convite sobe, o ecrã desaparece. Na mesma visita não volta a aparecer. Começa a música, se houver.
+2. **Abertura**: nomes (tamanho ajustado ao comprimento), o laço desenhado, foto do casal em arco que abre como cortina, data, contagem decrescente.
+3. **Cartão-convite** vinho com filete dourado: pais, frase de convite, nomes, cerimónia e receção (dia em grande).
+4. **A nossa história**: momentos por ano; as fotos abrem com o scroll. Em ecrãs grandes, as fotos ficam numa coluna fixa à direita e mudam com o momento que se lê.
+5. **Onde e quando** (separadores Cerimónia/Receção, mapa sépia), **Vens?**, **Presentes**, **Memórias**.
 
-```
-┌──────────────────────────────┐
-│ Maria                        │   nomes grandes, desencontrados
-│      ╭─╮                     │   o fio enlaça-se entre eles
-│ ─────╰─┼──────╮       João   │
-│        │                     │
-│ Sábado, 12 de junho de 2027, │
-│ às 16h00                     │
-│ Mosteiro dos Jerónimos       │
-│                              │
-│ │                            │
-│ ○ Onde e quando              │   mapa + Google Maps / Waze / Apple
-│ │                            │
-│ ○ Vens?                      │   nome → sim/não → acompanhantes
-│ │                            │
-│ ○ Presentes                  │   artigos (reservar) e dinheiro (contribuir)
-│ │                            │
-│ ○ Memórias                   │   enviar fotos e vídeos; galeria
-└──────────────────────────────┘
-```
+## Movimento
+
+- O conteúdo revela-se ao entrar no ecrã (sobe e ganha nitidez), uma vez.
+- O fio enche-se com o scroll; os nós acendem.
+- As fotos têm cortina, zoom lento e parallax leve.
+- As animações da abertura esperam que o envelope abra.
+- "Reduzir movimento" do sistema: sem deslocações nem escalas; o fio aparece já desenhado.
 
 ## Princípios
 
-1. **Um só momento de movimento**: ao abrir, o fio desenha o laço entre os nomes (≈1,6 s). Nada mais anima sozinho. Com "reduzir movimento", aparece já desenhado.
-2. **O fio é a linguagem**: a barra de progresso dos presentes em dinheiro é o mesmo fio a encher-se; o foco do teclado é cobalto.
-3. **Uma ação de cada vez**: cada passo pede só o que precisa; botões dizem o que acontece ("Enviar resposta", "Reservar", "Registar contribuição").
-4. **Listas, não cartões**: presentes e convidados em linhas com espaço, não grelhas de cartões iguais com sombra.
-5. **Portugal**: `12 de junho de 2027`, `16h00`, `1500 €` e `95,50 €`, IBAN em grupos de quatro.
+1. **Uma ação de cada vez**, com botões que dizem o que acontece ("Abrir convite", "Enviar resposta", "Reservar", "Registar contribuição").
+2. **Listas, não grelhas de cartões**, nos presentes.
+3. **Portugal**: `12 de junho de 2027`, `16h00`, `1500 €` e `95,50 €`, IBAN em blocos de quatro.
+4. **Telemóvel primeiro**; no computador, a coluna das fotos ocupa o espaço livre.

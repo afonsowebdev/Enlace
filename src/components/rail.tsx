@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useSpring } from "motion/react";
 
 /**
- * O fio ao longo das secções: uma linha clara por baixo e a linha cobalto
+ * O fio ao longo das secções: uma linha clara por baixo e a linha vinho
  * por cima, que se vai preenchendo à medida que o convidado desce.
  */
 export function Rail({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export function Rail({ children }: { children: React.ReactNode }) {
       <span aria-hidden="true" className="absolute top-0 bottom-0 left-0 w-[1.5px] bg-nevoa" />
       <motion.span
         aria-hidden="true"
-        className="absolute top-0 bottom-0 left-0 w-[1.5px] origin-top bg-cobalto"
+        className="absolute top-0 bottom-0 left-0 w-[1.5px] origin-top bg-vinho"
         style={{ scaleY }}
       />
       {children}

@@ -8,24 +8,22 @@ import { Rail } from "./rail";
 import { RailSection } from "./rail-section";
 import { Story, type StoryMoment } from "./story";
 import { Rsvp, type GuestResponse } from "./rsvp";
-import { Venue } from "./venue";
+import { Venue, type Place } from "./venue";
 
 type InvitationProps = {
   wedding: {
-    venueName: string;
-    venueAddress: string;
-    venueLatitude: number | null;
-    venueLongitude: number | null;
+    timeZone: string;
     rsvpDeadline: string;
     maxCompanions: number;
   };
+  places: Place[];
   story: StoryMoment[];
   gifts: DemoGift[];
   payment: { holderName: string; iban: string | null; mbwayPhone: string | null };
 };
 
 /** O percurso do convidado, pendurado no fio: onde, responder, oferecer, partilhar. */
-export function Invitation({ wedding, story, gifts, payment }: InvitationProps) {
+export function Invitation({ wedding, places, story, gifts, payment }: InvitationProps) {
   const [response, setResponse] = useState<GuestResponse | null>(null);
   const guestName = response?.name ?? null;
 
@@ -36,12 +34,7 @@ export function Invitation({ wedding, story, gifts, payment }: InvitationProps) 
       </RailSection>
 
       <RailSection id="local" title="Onde e quando">
-        <Venue
-          venueName={wedding.venueName}
-          venueAddress={wedding.venueAddress}
-          latitude={wedding.venueLatitude}
-          longitude={wedding.venueLongitude}
-        />
+        <Venue places={places} timeZone={wedding.timeZone} />
       </RailSection>
 
       <RailSection id="resposta" title="Vens?">

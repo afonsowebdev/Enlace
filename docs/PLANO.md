@@ -132,7 +132,14 @@ Mais tarde: evolução das respostas por dia (para saber quem lembrar antes do p
 
 ## 7. Direção de design
 
-Ver [`docs/DESIGN.md`](./DESIGN.md). Em resumo: um único **fio azul-cobalto** que se enlaça entre os nomes dos noivos e desce pela página, ligando cada passo do convidado; branco porcelana e tinta cobalto (louça e azulejo portugueses); tipografia **Italiana** + **Hanken Grotesk**; um só momento de movimento. A proposta inicial (papel creme e serifa clássica) foi revista por ser genérica.
+Ver [`docs/DESIGN.md`](./DESIGN.md): vinho e papel creme, Lamoric Rowen + Poppins, envelope com selo de lacre na abertura, cartão-convite vinho, fotos do casal em arco com animações e o fio que liga as secções.
+
+**Campos novos que o design pede e a base de dados ainda não tem** (migração na fase 2):
+
+- Pais de cada noivo (nomes).
+- Receção: nome do local, morada, hora e coordenadas (separada da cerimónia).
+- Fotos do casal: foto de capa e momentos da história (ano, texto, foto), num bucket público.
+- Música de fundo (opcional).
 
 ## 8. Limites e riscos
 

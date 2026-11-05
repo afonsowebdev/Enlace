@@ -17,7 +17,7 @@ export function Memories({ guestName }: { guestName: string | null }) {
 
   if (guestName === null) {
     return (
-      <p className="rounded-md bg-esmalte px-4 py-3 text-sm">
+      <p className="rounded-md bg-linho px-4 py-3 text-sm">
         Para enviar e ver as memórias do casamento, <a href="#resposta" className={buttonLink}>responde primeiro ao convite</a>.
       </p>
     );
@@ -74,7 +74,7 @@ export function Memories({ guestName }: { guestName: string | null }) {
       ) : (
         <ul className="mt-8 grid grid-cols-3 gap-1.5 sm:gap-2" aria-label="Galeria de memórias">
           {memories.map((m) => (
-            <li key={m.id} className="relative aspect-square overflow-hidden rounded-sm bg-esmalte">
+            <li key={m.id} className="relative aspect-square overflow-hidden rounded-sm bg-linho">
               {m.kind === "photo" ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={m.url} alt="" className="size-full object-cover" onContextMenu={(e) => e.preventDefault()} />

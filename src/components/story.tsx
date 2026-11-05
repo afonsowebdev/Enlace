@@ -28,7 +28,7 @@ export function Story({ moments }: { moments: StoryMoment[] }) {
               sizes="(min-width: 640px) 26rem, 70vw"
             />
             <Reveal className="mt-5 max-w-[78%] lg:mt-0 lg:max-w-none" delay={0.15}>
-              <p className="font-display text-2xl text-cobalto lg:text-[3.5rem] lg:leading-none">{m.year}</p>
+              <p className="font-display text-2xl text-vinho lg:text-[3.5rem] lg:leading-none">{m.year}</p>
               <p className="mt-1 lg:mt-3 lg:max-w-[34ch] lg:text-lg">{m.text}</p>
             </Reveal>
           </motion.li>

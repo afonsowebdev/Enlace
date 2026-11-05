@@ -20,9 +20,9 @@ export function RailSection({ id, title, intro, children, last = false }: RailSe
     <section id={id} aria-labelledby={`${id}-titulo`} className={`relative scroll-mt-8 pl-7 ${last ? "pb-4" : "pb-24"}`}>
       <motion.span
         aria-hidden="true"
-        className="absolute top-[1.1rem] -left-[0.33rem] size-[0.75rem] rounded-full border-[1.5px] border-cobalto"
-        initial={{ backgroundColor: "var(--porcelana)", scale: 0.6 }}
-        whileInView={{ backgroundColor: "var(--cobalto)", scale: 1 }}
+        className="absolute top-[1.1rem] -left-[0.33rem] size-[0.75rem] rounded-full border-[1.5px] border-vinho"
+        initial={{ backgroundColor: "var(--papel)", scale: 0.6 }}
+        whileInView={{ backgroundColor: "var(--vinho)", scale: 1 }}
         viewport={{ once: true, margin: "0px 0px -45% 0px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       />

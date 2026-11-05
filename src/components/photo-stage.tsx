@@ -32,7 +32,7 @@ export function PhotoStage({ photos }: { photos: StagePhoto[] }) {
     <aside aria-hidden="true" className="hidden lg:block">
       <div className="sticky top-[10vh] pt-20">
         <motion.div
-          className="arco relative mx-auto aspect-[4/5] max-h-[72vh] w-full overflow-hidden bg-esmalte"
+          className="arco relative mx-auto aspect-[4/5] max-h-[72vh] w-full overflow-hidden bg-linho"
           initial={{ clipPath: "inset(100% 0% 0% 0% round 999px 999px 12px 12px)" }}
           animate={{ clipPath: "inset(0% 0% 0% 0% round 999px 999px 12px 12px)" }}
           transition={{ duration: 1.4, ease: [0.76, 0, 0.24, 1], delay: 0.6 }}

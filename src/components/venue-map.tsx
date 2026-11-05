@@ -4,10 +4,10 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
-// Pino desenhado em CSS: um nó cobalto, como os do fio.
+// Pino desenhado em CSS: um nó vinho, como os do fio.
 const pin = L.divIcon({
   className: "",
-  html: '<span style="display:block;width:18px;height:18px;border-radius:9999px;background:var(--cobalto);border:3px solid var(--porcelana);box-shadow:0 0 0 1.5px var(--cobalto)"></span>',
+  html: '<span style="display:block;width:18px;height:18px;border-radius:9999px;background:var(--vinho);border:3px solid var(--papel);box-shadow:0 0 0 1.5px var(--vinho)"></span>',
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });

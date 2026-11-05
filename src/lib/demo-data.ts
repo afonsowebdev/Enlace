@@ -29,6 +29,20 @@ export const demoWedding = {
     "Depois de nove anos, uma casa e um cão chamado Bacalhau, decidimos casar. Queremos muito que estejas connosco.",
   rsvpDeadline: "2027-05-15",
   maxCompanions: 2,
+  // Novos campos do cartão-convite (ainda não estão na base de dados: ver docs/PLANO.md, fase 2)
+  parents: {
+    partnerOne: ["António Santos", "Helena Santos"],
+    partnerTwo: ["Carlos Pereira", "Rosa Pereira"],
+  },
+  reception: {
+    name: "Quinta da Regaleira",
+    address: "Rua Barbosa du Bocage 5, 2710-567 Sintra",
+    startsAt: "2027-06-12T18:30:00Z",
+    latitude: 38.7963,
+    longitude: -9.3961,
+  },
+  /** Música de fundo opcional (ficheiro em public/ ou URL). Sem música, o botão não aparece. */
+  musicUrl: null as string | null,
 };
 
 export const demoPaymentDetails = {
