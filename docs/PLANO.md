@@ -130,18 +130,16 @@ A função `wedding_stats(wedding_id)` devolve, numa só chamada:
 
 Mais tarde: evolução das respostas por dia (para saber quem lembrar antes do prazo) e exportação CSV da lista de convidados para o catering.
 
-## 7. Direção de design (proposta — a validar antes de codificar)
+## 7. Direção de design
 
-**Ideia:** o convite deve parecer **papelaria fina impressa**, não um site. Minimalismo com intenção: muito espaço em branco, tipografia como protagonista, uma única cor de destaque.
+Ver [`docs/DESIGN.md`](./DESIGN.md): vinho e papel creme, Lamoric Rowen + Poppins, envelope com selo de lacre na abertura, cartão-convite vinho, fotos do casal em arco com animações e o fio que liga as secções.
 
-- **Abertura (hero):** os nomes dos noivos em tipografia grande com serifa, como impressos em relevo; a data numa linha discreta por baixo (`12 · 06 · 2027`), sem estatísticas nem ícones.
-- **Paleta:** papel `#F6F2EA`, tinta `#24231F`, uma cor de destaque (verde-sálvia `#6E7B5C`), linhas finas `#D9D2C3`. Modo escuro como "papel à noite".
-- **Tipografia:** uma serifa com carácter para os nomes e títulos (ex.: *Cormorant Garamond*) + uma sem-serifa muito legível para formulários e botões (ex.: *Instrument Sans*).
-- **Intuitivo:** um passo de cada vez (nome → resposta → presentes); botões grandes para o polegar; estados claros ("Reservado por ti", "Já reservado", "Disponível").
-- **Movimento:** discreto — o presente "vira" quando é reservado; nada de animações que atrasem.
-- **Acessibilidade:** contraste AA, navegação por teclado, textos alternativos, formatos portugueses (`12 de junho de 2027`, `16h00`, `120,00 €`).
+**Campos novos que o design pede e a base de dados ainda não tem** (migração na fase 2):
 
-Skills a usar: **frontend-design** (direção e identidade) e **ui-ux-pro-max** (verificação de UX, acessibilidade e combinações de fontes).
+- Pais de cada noivo (nomes).
+- Receção: nome do local, morada, hora e coordenadas (separada da cerimónia).
+- Fotos do casal: foto de capa e momentos da história (ano, texto, foto), num bucket público.
+- Música de fundo (opcional).
 
 ## 8. Limites e riscos
 
@@ -160,7 +158,7 @@ Skills a usar: **frontend-design** (direção e identidade) e **ui-ux-pro-max** 
 | # | Entrega | Skills |
 |---|---|---|
 | 0 | ✅ **Ambiente**: projeto, esquema, RLS, testes, glossário, ADRs, este plano | domain-modeling, supabase-postgres-best-practices, tdd |
-| 1 | Design: tokens, tipografia, componentes base, protótipo da página do convite | frontend-design, ui-ux-pro-max |
+| 1 | ✅ Design: tokens, tipografia, componentes base, protótipo da página do convite | frontend-design, ui-ux-pro-max |
 | 2 | Convite público + mapa | tdd, frontend-design |
 | 3 | Registo do convidado + resposta + acompanhantes | tdd, supabase-postgres-best-practices |
 | 4 | Lista de presentes: reservas de artigos + contribuições (IBAN / MB WAY), em tempo real | tdd |
