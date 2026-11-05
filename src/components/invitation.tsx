@@ -4,7 +4,9 @@ import { useState } from "react";
 import type { DemoGift } from "@/lib/demo-data";
 import { Gifts } from "./gifts";
 import { Memories } from "./memories";
+import { Rail } from "./rail";
 import { RailSection } from "./rail-section";
+import { Story, type StoryMoment } from "./story";
 import { Rsvp, type GuestResponse } from "./rsvp";
 import { Venue } from "./venue";
 
@@ -17,17 +19,22 @@ type InvitationProps = {
     rsvpDeadline: string;
     maxCompanions: number;
   };
+  story: StoryMoment[];
   gifts: DemoGift[];
   payment: { holderName: string; iban: string | null; mbwayPhone: string | null };
 };
 
 /** O percurso do convidado, pendurado no fio: onde, responder, oferecer, partilhar. */
-export function Invitation({ wedding, gifts, payment }: InvitationProps) {
+export function Invitation({ wedding, story, gifts, payment }: InvitationProps) {
   const [response, setResponse] = useState<GuestResponse | null>(null);
   const guestName = response?.name ?? null;
 
   return (
-    <>
+    <Rail>
+      <RailSection id="historia" title="A nossa história">
+        <Story moments={story} />
+      </RailSection>
+
       <RailSection id="local" title="Onde e quando">
         <Venue
           venueName={wedding.venueName}
@@ -57,6 +64,6 @@ export function Invitation({ wedding, gifts, payment }: InvitationProps) {
       <RailSection id="memorias" title="Memórias" intro="No dia e depois, partilha aqui as fotos e vídeos que tirares." last>
         <Memories guestName={guestName} />
       </RailSection>
-    </>
+    </Rail>
   );
 }

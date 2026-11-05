@@ -1,4 +1,10 @@
+"use client";
+
+import { motion } from "motion/react";
 import { formatWeddingDate, formatWeddingTime } from "@/lib/format";
+import { ArchPhoto } from "./arch-photo";
+import { Countdown } from "./countdown";
+import { usePhotoStage } from "./photo-stage";
 
 type HeroProps = {
   partnerOneName: string;
@@ -7,37 +13,86 @@ type HeroProps = {
   timeZone: string;
   venueName: string;
   welcomeMessage?: string | null;
+  coverPhoto: { src: string; alt: string };
 };
 
+const ease = [0.22, 1, 0.36, 1] as const;
+
+/** Tamanho dos nomes ajustado ao comprimento, para "Maria" e "Alexandra" caberem sem partir. */
+function nameSize(name: string) {
+  const em = Math.max(name.length, 4) * 0.62;
+  return `min(8.5rem, calc((min(100vw, 34rem) - 2.5rem) / ${em.toFixed(2)}))`;
+}
+
 /**
- * Abertura: os nomes dos noivos e o fio que se enlaça entre eles.
- * O fio termina na margem esquerda e continua pela página (ver RailSection).
+ * Abertura: os nomes, o fio que se enlaça entre eles e a foto do casal.
+ * O fio termina na margem esquerda e continua pela página.
  */
-export function Hero({ partnerOneName, partnerTwoName, startsAt, timeZone, venueName, welcomeMessage }: HeroProps) {
+export function Hero({
+  partnerOneName,
+  partnerTwoName,
+  startsAt,
+  timeZone,
+  venueName,
+  welcomeMessage,
+  coverPhoto,
+}: HeroProps) {
+  const { show } = usePhotoStage();
   return (
-    <header className="pt-16 sm:pt-24">
-      <h1 className="font-display leading-[0.9] tracking-[0.01em]">
-        <span className="block text-[clamp(4.5rem,19vw,10rem)]">{partnerOneName}</span>
+    <motion.header className="pt-14 sm:pt-20" onViewportEnter={() => show(0)} viewport={{ amount: 0.3 }}>
+      <h1 className="font-display leading-[0.95]">
+        <motion.span
+          className="block"
+          style={{ fontSize: nameSize(partnerOneName) }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease }}
+        >
+          {partnerOneName}
+        </motion.span>
         <span className="sr-only"> e </span>
         <Knot />
-        <span className="block border-l-[1.5px] border-cobalto text-right text-[clamp(4.5rem,19vw,10rem)]">{partnerTwoName}</span>
+        <motion.span
+          className="block border-l-[1.5px] border-cobalto text-right"
+          style={{ fontSize: nameSize(partnerTwoName) }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease, delay: 0.5 }}
+        >
+          {partnerTwoName}
+        </motion.span>
       </h1>
 
       <div className="border-l-[1.5px] border-cobalto pt-10 pb-4 pl-7">
-        <p className="text-lg leading-snug">
-          {formatWeddingDate(startsAt, timeZone)},{" "}
-          <span className="whitespace-nowrap">às {formatWeddingTime(startsAt, timeZone)}</span>
-        </p>
-        <p className="mt-1 text-pedra">{venueName}</p>
-        {welcomeMessage && <p className="mt-8 max-w-[52ch] text-pretty">{welcomeMessage}</p>}
-        <a
-          href="#resposta"
-          className="mt-8 inline-flex items-center rounded-full bg-cobalto px-6 py-3 font-medium text-sobre-cobalto transition-opacity hover:opacity-90"
+        <ArchPhoto
+          src={coverPhoto.src}
+          alt={coverPhoto.alt}
+          trigger="load"
+          priority
+          className="aspect-[4/5] w-full lg:hidden"
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease, delay: 1.5 }}
         >
-          Responder ao convite
-        </a>
+          <p className="mt-10 text-lg leading-snug font-medium lg:mt-0">
+            {formatWeddingDate(startsAt, timeZone)},{" "}
+            <span className="whitespace-nowrap">às {formatWeddingTime(startsAt, timeZone)}</span>
+          </p>
+          <p className="mt-1 text-pedra">{venueName}</p>
+          <Countdown startsAt={startsAt} />
+          {welcomeMessage && <p className="mt-8 max-w-[52ch] text-pretty">{welcomeMessage}</p>}
+          <a
+            href="#resposta"
+            className="mt-8 inline-flex items-center rounded-full bg-cobalto px-6 py-3 font-medium text-sobre-cobalto transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            Responder ao convite
+          </a>
+        </motion.div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
@@ -46,7 +101,7 @@ function Knot() {
   return (
     <svg
       viewBox="0 0 340 96"
-      className="-my-3 block h-auto w-full overflow-visible text-cobalto sm:-my-5"
+      className="-my-2 block h-auto w-full overflow-visible text-cobalto sm:-my-4"
       aria-hidden="true"
       focusable="false"
     >

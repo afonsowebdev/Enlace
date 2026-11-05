@@ -84,3 +84,13 @@ export const demoGifts: DemoGift[] = [
     contributedCents: 34000,
   },
 ];
+
+// Fotos provisórias (public/demo). Substituir pelas fotos verdadeiras do casal.
+export const demoCoverPhoto = { src: "/demo/casal-1.jpg", alt: "Maria e João, abraçados" };
+
+export const demoStory = [
+  { year: "2016", text: "Conhecemo-nos num jantar de amigos, em Alfama. O João chegou atrasado.", photo: { src: "/demo/casal-2.jpg", alt: "Maria e João no primeiro jantar" } },
+  { year: "2019", text: "A primeira casa, e o Bacalhau, que escolheu ficar connosco.", photo: { src: "/demo/casal-3.jpg", alt: "Maria e João com o cão Bacalhau" } },
+  { year: "2025", text: "O pedido, ao pôr do sol, numa praia da Comporta.", photo: { src: "/demo/casal-4.jpg", alt: "O pedido de casamento na praia" } },
+  { year: "2027", text: "Agora falta o mais importante: tu, connosco, neste dia.", photo: { src: "/demo/casal-5.jpg", alt: "Maria e João a sorrir" } },
+];

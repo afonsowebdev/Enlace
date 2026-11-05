@@ -1,16 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Italiana } from "next/font/google";
+import { Poppins } from "next/font/google";
+import localFont from "next/font/local";
+import { MotionProvider } from "@/components/motion-provider";
 import "./globals.css";
 
-const italiana = Italiana({
-  variable: "--font-italiana",
+// Lamoric Rowen (HansCo Studio): letra decorativa, só maiúsculas — nomes e títulos.
+const lamoric = localFont({
+  src: "../fonts/LamoricRowen.woff2",
+  variable: "--font-lamoric",
   weight: "400",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
+// Poppins: todo o texto normal (datas, formulários, botões, preços).
+const poppins = Poppins({
+  variable: "--font-poppins",
   weight: ["400", "500", "600"],
   subsets: ["latin"],
   display: "swap",
@@ -30,8 +34,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-PT" className={`${italiana.variable} ${hanken.variable}`}>
-      <body>{children}</body>
+    <html lang="pt-PT" className={`${lamoric.variable} ${poppins.variable}`}>
+      <body>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
