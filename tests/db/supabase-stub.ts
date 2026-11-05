@@ -23,8 +23,12 @@ export async function createTestDb() {
     create function auth.uid() returns uuid language sql stable as $$
       select (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')::uuid
     $$;
+    create function auth.jwt() returns jsonb language sql stable as $$
+      select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
+    $$;
     grant usage on schema auth to anon, authenticated;
     grant execute on function auth.uid() to anon, authenticated;
+    grant execute on function auth.jwt() to anon, authenticated;
 
     create schema storage;
     create table storage.buckets (
@@ -58,15 +62,19 @@ export async function createTestDb() {
   return db;
 }
 
-/** Executa `fn` como um utilizador com sessão (convidado anónimo ou noivo). */
+/**
+ * Executa `fn` como um utilizador com sessão. `anonymous: true` simula um
+ * convidado (sessão anónima); por omissão é uma conta com email (noivos).
+ */
 export async function asUser<T>(
   db: PGlite,
   userId: string,
   fn: (tx: Pick<PGlite, "query" | "exec">) => Promise<T>,
+  { anonymous = false }: { anonymous?: boolean } = {},
 ): Promise<T> {
   return db.transaction(async (tx) => {
     await tx.query(`select set_config('request.jwt.claims', $1, true)`, [
-      JSON.stringify({ sub: userId, role: "authenticated" }),
+      JSON.stringify({ sub: userId, role: "authenticated", is_anonymous: anonymous }),
     ]);
     await tx.exec(`set local role authenticated`);
     return fn(tx);

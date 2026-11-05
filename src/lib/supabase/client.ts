@@ -1,7 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { env } from "@/lib/env";
+import { supabaseConfig } from "@/lib/env";
 
 /** Cliente Supabase para componentes que correm no browser. */
 export function createClient() {
-  return createBrowserClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const config = supabaseConfig();
+  if (!config) throw new Error("Supabase não configurado: faltam NEXT_PUBLIC_SUPABASE_URL e a chave pública.");
+  return createBrowserClient(config.url, config.key);
 }
