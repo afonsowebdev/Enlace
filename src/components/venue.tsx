@@ -3,20 +3,13 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { formatWeddingTime } from "@/lib/format";
+import type { Place } from "@/lib/types";
 
 const VenueMap = dynamic(() => import("./venue-map"), {
   ssr: false,
   loading: () => <div className="h-full w-full bg-linho" />,
 });
 
-export type Place = {
-  label: string;
-  name: string;
-  address: string;
-  startsAt: string;
-  latitude: number | null;
-  longitude: number | null;
-};
 
 /** Os locais do casamento (cerimónia e receção), com mapa e caminho em cada um. */
 export function Venue({ places, timeZone }: { places: Place[]; timeZone: string }) {

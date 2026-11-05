@@ -32,6 +32,7 @@ function dateParts(iso: string, timeZone: string) {
  * os noivos, a cerimónia e a receção, separados por ornamentos dourados.
  */
 export function InvitationCard({ partnerOneName, partnerTwoName, parents, events, timeZone }: InvitationCardProps) {
+  const hasParents = parents.partnerOne.length > 0 || parents.partnerTwo.length > 0;
   return (
     <div className="relative">
       <motion.div
@@ -49,19 +50,32 @@ export function InvitationCard({ partnerOneName, partnerTwoName, parents, events
           <p className="font-display text-[0.95rem] tracking-[0.06em] text-dourado sm:text-lg">Convite de casamento</p>
         </Reveal>
 
-        <Reveal className="relative mt-6 grid grid-cols-[1fr_auto_1fr] items-stretch gap-4 text-sm" delay={0.05}>
-          <ParentsColumn title={`Pais de ${partnerOneName}`} names={parents.partnerOne} />
-          <span aria-hidden="true" className="w-px bg-dourado/60" />
-          <ParentsColumn title={`Pais de ${partnerTwoName}`} names={parents.partnerTwo} />
-        </Reveal>
+        {hasParents && (
+          <>
+            <Reveal className="relative mt-6 grid grid-cols-[1fr_auto_1fr] items-stretch gap-4 text-sm" delay={0.05}>
+              <ParentsColumn title={`Pais de ${partnerOneName}`} names={parents.partnerOne} />
+              <span aria-hidden="true" className="w-px bg-dourado/60" />
+              <ParentsColumn title={`Pais de ${partnerTwoName}`} names={parents.partnerTwo} />
+            </Reveal>
+            <Ornament className="relative mt-9 text-dourado" />
+          </>
+        )}
 
-        <Ornament className="relative mt-9 text-dourado" />
-
-        <Reveal className="relative mt-8" delay={0.1}>
+        <Reveal className={`relative ${hasParents ? "mt-8" : "mt-6"}`} delay={0.1}>
           <p className="text-[0.95rem] leading-relaxed opacity-90">
-            Têm a alegria de vos convidar
-            <br />
-            para o casamento dos seus filhos
+            {hasParents ? (
+              <>
+                Têm a alegria de vos convidar
+                <br />
+                para o casamento dos seus filhos
+              </>
+            ) : (
+              <>
+                Temos a alegria de te convidar
+                <br />
+                para o nosso casamento
+              </>
+            )}
           </p>
         </Reveal>
 

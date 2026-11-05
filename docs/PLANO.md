@@ -134,7 +134,7 @@ Mais tarde: evolução das respostas por dia (para saber quem lembrar antes do p
 
 Ver [`docs/DESIGN.md`](./DESIGN.md): vinho e papel creme, Lamoric Rowen + Poppins, envelope com selo de lacre na abertura, cartão-convite vinho, fotos do casal em arco com animações e o fio que liga as secções.
 
-**Campos novos que o design pede e a base de dados ainda não tem** (migração na fase 2):
+**Campos do design acrescentados na migração `20261106000000_wedding_content.sql`:**
 
 - Pais de cada noivo (nomes).
 - Receção: nome do local, morada, hora e coordenadas (separada da cerimónia).
@@ -159,11 +159,11 @@ Ver [`docs/DESIGN.md`](./DESIGN.md): vinho e papel creme, Lamoric Rowen + Poppin
 |---|---|---|
 | 0 | ✅ **Ambiente**: projeto, esquema, RLS, testes, glossário, ADRs, este plano | domain-modeling, supabase-postgres-best-practices, tdd |
 | 1 | ✅ Design: tokens, tipografia, componentes base, protótipo da página do convite | frontend-design, ui-ux-pro-max |
-| 2 | Convite público + mapa | tdd, frontend-design |
-| 3 | Registo do convidado + resposta + acompanhantes | tdd, supabase-postgres-best-practices |
-| 4 | Lista de presentes: reservas de artigos + contribuições (IBAN / MB WAY), em tempo real | tdd |
-| 5 | Login dos noivos + painel (casamento, presentes, convidados) | tdd, security-review |
-| 6 | Memórias: envio + galeria + download .zip | tdd, agent-browser |
+| 2 | ✅ Convite público lido do Supabase + mapa | tdd, frontend-design |
+| 3 | ✅ Registo do convidado + resposta + acompanhantes | tdd, supabase-postgres-best-practices |
+| 4 | ✅ Lista de presentes: reservas de artigos + contribuições (IBAN / MB WAY) | tdd |
+| 5 | ✅ Login dos noivos + painel (casamento, história, presentes, convidados) | tdd, security-review |
+| 6 | ✅ Memórias: envio + galeria + download .zip | tdd, agent-browser |
 | 7 | Estatísticas | dataviz |
 | 8 | Revisão final e deploy na Vercel | code-review, security-review, agent-browser |
 

@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import type { DemoGift } from "@/lib/demo-data";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatEuros, formatIban, formatPhone } from "@/lib/format";
+import { toGift, type Gift, type GiftRow, type PaymentDetails } from "@/lib/types";
 import { GiftIcon } from "./gift-icon";
 import { buttonLink, buttonPrimary, field, goToRsvp } from "./ui";
-
-type PaymentDetails = { holderName: string; iban: string | null; mbwayPhone: string | null };
+import { friendlyError } from "./use-guest";
 
 type GiftsProps = {
-  gifts: DemoGift[];
-  payment: PaymentDetails;
-  guestName: string | null;
+  supabase: SupabaseClient;
+  weddingId: number;
+  initialGifts: Gift[];
+  /** Convidado registado neste telemóvel (null antes de responder). */
+  guestId: number | null;
 };
 
 type Filter = "all" | "available" | "item" | "money";
@@ -21,16 +23,19 @@ type Toast = { id: number; text: string; undo?: () => void };
 /**
  * Lista de presentes: os presentes em dinheiro em destaque, os artigos numa
  * grelha com ilustração, filtros e um aviso com "Anular" depois de reservar.
+ * A regra "um artigo, uma reserva" é garantida pela base de dados (ADR 0002).
  */
-export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
-  const [gifts, setGifts] = useState(initial);
+export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps) {
+  const [gifts, setGifts] = useState(initialGifts);
   const [mine, setMine] = useState<Set<number>>(new Set());
   const [myContributions, setMyContributions] = useState<Record<number, number>>({});
+  const [payment, setPayment] = useState<PaymentDetails | null>(null);
   const [openId, setOpenId] = useState<number | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [toast, setToast] = useState<Toast | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
 
-  const registered = guestName !== null;
+  const registered = guestId !== null;
 
   useEffect(() => {
     if (!toast) return;
@@ -38,31 +43,88 @@ export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
     return () => clearTimeout(t);
   }, [toast]);
 
-  function setReserved(gift: DemoGift, reserving: boolean) {
+  const refreshGifts = useCallback(async () => {
+    const { data } = await supabase
+      .from("gifts")
+      .select("*")
+      .eq("wedding_id", weddingId)
+      .order("sort_order")
+      .order("id")
+      .returns<GiftRow[]>();
+    if (data) setGifts(data.map(toGift));
+  }, [supabase, weddingId]);
+
+  // As reservas e contribuições deste convidado, e os dados de pagamento dos noivos.
+  useEffect(() => {
+    if (guestId === null) return;
+    (async () => {
+      const [res, con, pay] = await Promise.all([
+        supabase.from("gift_reservations").select("gift_id").eq("guest_id", guestId),
+        supabase.from("gift_contributions").select("gift_id, amount_cents").eq("guest_id", guestId),
+        supabase
+          .from("wedding_payment_details")
+          .select("holder_name, iban, mbway_phone")
+          .eq("wedding_id", weddingId)
+          .maybeSingle(),
+      ]);
+      setMine(new Set((res.data ?? []).map((r) => r.gift_id as number)));
+      const totals: Record<number, number> = {};
+      for (const c of con.data ?? []) totals[c.gift_id] = (totals[c.gift_id] ?? 0) + c.amount_cents;
+      setMyContributions(totals);
+      if (pay.data) setPayment({ holderName: pay.data.holder_name, iban: pay.data.iban, mbwayPhone: pay.data.mbway_phone });
+    })();
+  }, [supabase, guestId, weddingId]);
+
+  async function cancelReservation(gift: Gift, quiet = false) {
+    if (guestId === null) return;
+    setBusyId(gift.id);
+    const { error } = await supabase.from("gift_reservations").delete().eq("gift_id", gift.id).eq("guest_id", guestId);
+    setBusyId(null);
+    if (error) return setToast({ id: Date.now(), text: friendlyError(error) });
     setMine((prev) => {
       const next = new Set(prev);
-      if (reserving) next.add(gift.id);
-      else next.delete(gift.id);
+      next.delete(gift.id);
       return next;
     });
-    setGifts((prev) => prev.map((g) => (g.id === gift.id ? { ...g, isReserved: reserving } : g)));
+    await refreshGifts();
+    if (!quiet) setToast({ id: Date.now(), text: `Reserva cancelada: ${gift.name}` });
   }
 
-  function reserve(gift: DemoGift) {
-    setReserved(gift, true);
-    setToast({ id: Date.now(), text: `Reservaste: ${gift.name}`, undo: () => setReserved(gift, false) });
+  async function reserve(gift: Gift) {
+    if (guestId === null) return;
+    setBusyId(gift.id);
+    const { error } = await supabase
+      .from("gift_reservations")
+      .insert({ wedding_id: weddingId, gift_id: gift.id, guest_id: guestId });
+    setBusyId(null);
+    if (error) {
+      await refreshGifts();
+      return setToast({ id: Date.now(), text: friendlyError(error) });
+    }
+    setMine((prev) => new Set(prev).add(gift.id));
+    await refreshGifts();
+    setToast({ id: Date.now(), text: `Reservaste: ${gift.name}`, undo: () => cancelReservation(gift, true) });
   }
 
-  function cancel(gift: DemoGift) {
-    setReserved(gift, false);
-    setToast({ id: Date.now(), text: `Reserva cancelada: ${gift.name}` });
-  }
-
-  function contribute(gift: DemoGift, cents: number) {
+  async function contribute(gift: Gift, cents: number, method: "bank_transfer" | "mbway") {
+    if (guestId === null) return friendlyError(null);
+    const { error } = await supabase.from("gift_contributions").insert({
+      wedding_id: weddingId,
+      gift_id: gift.id,
+      guest_id: guestId,
+      amount_cents: cents,
+      payment_method: method,
+    });
+    if (error) return friendlyError(error);
     setMyContributions((prev) => ({ ...prev, [gift.id]: (prev[gift.id] ?? 0) + cents }));
-    setGifts((prev) => prev.map((g) => (g.id === gift.id ? { ...g, contributedCents: g.contributedCents + cents } : g)));
+    await refreshGifts();
     setOpenId(null);
     setToast({ id: Date.now(), text: `Contribuição de ${formatEuros(cents)} registada. Obrigado!` });
+    return null;
+  }
+
+  if (gifts.length === 0) {
+    return <p className="text-pedra">Os noivos ainda não adicionaram presentes. Volta mais tarde.</p>;
   }
 
   const money = gifts.filter((g) => g.kind === "money");
@@ -71,7 +133,7 @@ export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
   const raised = money.reduce((sum, g) => sum + g.contributedCents, 0);
 
   // Disponíveis primeiro, depois os meus, por fim os já reservados por outros.
-  const rank = (g: DemoGift) => (!g.isReserved ? 0 : mine.has(g.id) ? 1 : 2);
+  const rank = (g: Gift) => (!g.isReserved ? 0 : mine.has(g.id) ? 1 : 2);
   const shownItems = items
     .filter((g) => (filter === "available" ? !g.isReserved || mine.has(g.id) : true))
     .sort((a, b) => rank(a) - rank(b));
@@ -129,7 +191,7 @@ export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
               open={openId === gift.id}
               onToggle={() => (registered ? setOpenId(openId === gift.id ? null : gift.id) : goToRsvp())}
               payment={payment}
-              onContribute={(cents) => contribute(gift, cents)}
+              onContribute={(cents, method) => contribute(gift, cents, method)}
             />
           ))}
         </div>
@@ -151,7 +213,8 @@ export function Gifts({ gifts: initial, payment, guestName }: GiftsProps) {
                   gift={gift}
                   isMine={mine.has(gift.id)}
                   onReserve={() => (registered ? reserve(gift) : goToRsvp())}
-                  onCancel={() => cancel(gift)}
+                  onCancel={() => cancelReservation(gift)}
+                  busy={busyId === gift.id}
                 />
               </motion.li>
             ))}
@@ -194,11 +257,13 @@ function ItemCard({
   isMine,
   onReserve,
   onCancel,
+  busy = false,
 }: {
-  gift: DemoGift;
+  gift: Gift;
   isMine: boolean;
   onReserve: () => void;
   onCancel: () => void;
+  busy?: boolean;
 }) {
   const takenByOther = gift.isReserved && !isMine;
   return (
@@ -208,7 +273,12 @@ function ItemCard({
       }`}
     >
       <div className={`relative grid aspect-[5/4] place-items-center bg-linho ${takenByOther ? "opacity-50" : ""}`}>
-        <GiftIcon icon={gift.icon} className="size-16 text-vinho sm:size-20" />
+        {gift.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={gift.imageUrl} alt="" className="absolute inset-0 size-full object-cover" loading="lazy" />
+        ) : (
+          <GiftIcon icon={gift.icon} className="size-16 text-vinho sm:size-20" />
+        )}
         {gift.isReserved && (
           <span
             className={`absolute top-3 left-0 rounded-r-full px-3 py-1 text-xs font-medium ${
@@ -234,12 +304,12 @@ function ItemCard({
             {takenByOther ? (
               <p className="py-2 text-center text-sm text-pedra">Já reservado</p>
             ) : isMine ? (
-              <button type="button" onClick={onCancel} className="w-full rounded-full border border-nevoa py-2 text-sm font-medium text-pedra hover:text-tinta">
+              <button type="button" onClick={onCancel} disabled={busy} className="w-full rounded-full border border-nevoa py-2 text-sm font-medium text-pedra hover:text-tinta disabled:opacity-50">
                 Cancelar reserva
               </button>
             ) : (
-              <button type="button" onClick={onReserve} className="w-full rounded-full bg-cartao py-2 text-sm font-medium text-sobre-cartao transition-opacity hover:opacity-90">
-                Reservar
+              <button type="button" onClick={onReserve} disabled={busy} className="w-full rounded-full bg-cartao py-2 text-sm font-medium text-sobre-cartao transition-opacity hover:opacity-90 disabled:opacity-50">
+                {busy ? "A reservar…" : "Reservar"}
               </button>
             )}
           </div>
@@ -257,12 +327,12 @@ function MoneyCard({
   payment,
   onContribute,
 }: {
-  gift: DemoGift;
+  gift: Gift;
   myTotal: number;
   open: boolean;
   onToggle: () => void;
-  payment: PaymentDetails;
-  onContribute: (cents: number) => void;
+  payment: PaymentDetails | null;
+  onContribute: (cents: number, method: "bank_transfer" | "mbway") => Promise<string | null>;
 }) {
   const goal = gift.priceCents;
   const reached = goal !== null && gift.contributedCents >= goal;
@@ -328,7 +398,13 @@ function MoneyCard({
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <ContributionForm payment={payment} onContribute={onContribute} />
+            {payment ? (
+              <ContributionForm payment={payment} onContribute={onContribute} />
+            ) : (
+              <p className="mt-3 rounded-2xl border border-nevoa bg-linho p-5 text-sm">
+                Os noivos ainda não indicaram o IBAN nem o MB WAY. Volta a tentar mais tarde.
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -343,8 +419,10 @@ function ContributionForm({
   onContribute,
 }: {
   payment: PaymentDetails;
-  onContribute: (cents: number) => void;
+  onContribute: (cents: number, method: "bank_transfer" | "mbway") => Promise<string | null>;
 }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [amount, setAmount] = useState<number | null>(5000);
   const [custom, setCustom] = useState("");
   const [method, setMethod] = useState<"bank_transfer" | "mbway">(payment.mbwayPhone ? "mbway" : "bank_transfer");
@@ -360,9 +438,14 @@ function ContributionForm({
   return (
     <form
       className="mt-3 space-y-6 rounded-2xl border border-nevoa bg-linho p-5"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        if (valid) onContribute(cents);
+        if (!valid || saving) return;
+        setSaving(true);
+        setError(null);
+        const problem = await onContribute(cents, method);
+        setSaving(false);
+        if (problem) setError(problem);
       }}
     >
       <fieldset>
@@ -435,9 +518,14 @@ function ContributionForm({
       )}
 
       <div>
-        <button type="submit" className={buttonPrimary} disabled={!valid}>
-          Registar contribuição{valid ? ` de ${formatEuros(cents)}` : ""}
+        <button type="submit" className={buttonPrimary} disabled={!valid || saving}>
+          {saving ? "A registar…" : `Registar contribuição${valid ? ` de ${formatEuros(cents)}` : ""}`}
         </button>
+        {error && (
+          <p role="alert" className="mt-3 text-sm font-medium text-vinho">
+            {error}
+          </p>
+        )}
         <p className="mt-3 max-w-[52ch] text-sm text-pedra">
           O pagamento faz-se na app do teu banco. Registar aqui ajuda os noivos a saber de quem é cada transferência.
         </p>

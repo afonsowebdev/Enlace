@@ -12,7 +12,7 @@ type HeroProps = {
   timeZone: string;
   venueName: string;
   welcomeMessage?: string | null;
-  coverPhoto: { src: string; alt: string };
+  coverPhoto: { src: string; alt: string } | null;
 };
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -63,6 +63,7 @@ export function Hero({
       </h1>
 
       <div className="border-l-[1.5px] border-vinho pt-10 pb-4 pl-7">
+        {coverPhoto && (
         <PrintPhoto
           src={coverPhoto.src}
           alt={coverPhoto.alt}
@@ -72,13 +73,14 @@ export function Hero({
           priority
           className="mx-auto w-[82%] sm:w-[78%]"
         />
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease, delay: 1.5 }}
         >
-          <p className="mt-12 text-lg leading-snug font-medium">
+          <p className={`${coverPhoto ? "mt-12" : ""} text-lg leading-snug font-medium`}>
             {formatWeddingDate(startsAt, timeZone)},{" "}
             <span className="whitespace-nowrap">às {formatWeddingTime(startsAt, timeZone)}</span>
           </p>

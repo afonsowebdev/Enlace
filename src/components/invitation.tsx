@@ -1,49 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import type { DemoGift } from "@/lib/demo-data";
+import type { Gift, Place, StoryMoment } from "@/lib/types";
 import { Gifts } from "./gifts";
 import { Memories } from "./memories";
 import { Rail } from "./rail";
 import { RailSection } from "./rail-section";
-import { Story, type StoryMoment } from "./story";
-import { Rsvp, type GuestResponse } from "./rsvp";
-import { Venue, type Place } from "./venue";
+import { Rsvp } from "./rsvp";
+import { Story } from "./story";
+import { useGuest } from "./use-guest";
+import { Venue } from "./venue";
 
 type InvitationProps = {
-  wedding: {
-    timeZone: string;
-    rsvpDeadline: string;
-    maxCompanions: number;
-  };
+  weddingId: number;
+  timeZone: string;
+  rsvpDeadline: string | null;
+  maxCompanions: number;
   places: Place[];
   story: StoryMoment[];
-  gifts: DemoGift[];
-  payment: { holderName: string; iban: string | null; mbwayPhone: string | null };
+  gifts: Gift[];
 };
 
-/** O percurso do convidado, pendurado no fio: onde, responder, oferecer, partilhar. */
-export function Invitation({ wedding, places, story, gifts, payment }: InvitationProps) {
-  const [response, setResponse] = useState<GuestResponse | null>(null);
-  const guestName = response?.name ?? null;
+/** O percurso do convidado, pendurado no fio: história, onde, responder, oferecer, partilhar. */
+export function Invitation({ weddingId, timeZone, rsvpDeadline, maxCompanions, places, story, gifts }: InvitationProps) {
+  const { supabase, guest, loading, respond } = useGuest(weddingId);
 
   return (
     <Rail>
-      <RailSection id="historia" title="A nossa história">
-        <Story moments={story} />
-      </RailSection>
+      {story.length > 0 && (
+        <RailSection id="historia" title="A nossa história">
+          <Story moments={story} />
+        </RailSection>
+      )}
 
       <RailSection id="local" title="Onde e quando">
-        <Venue places={places} timeZone={wedding.timeZone} />
+        <Venue places={places} timeZone={timeZone} />
       </RailSection>
 
       <RailSection id="resposta" title="Vens?">
-        <Rsvp
-          maxCompanions={wedding.maxCompanions}
-          deadline={wedding.rsvpDeadline}
-          response={response}
-          onRespond={setResponse}
-        />
+        {loading ? (
+          <p className="text-pedra">A carregar…</p>
+        ) : (
+          <Rsvp
+            key={guest?.id ?? "novo"}
+            maxCompanions={maxCompanions}
+            deadline={rsvpDeadline}
+            response={
+              guest && guest.rsvp_status !== "pending"
+                ? {
+                    name: guest.full_name,
+                    attending: guest.rsvp_status === "attending",
+                    companions: guest.companions,
+                    message: guest.message ?? "",
+                  }
+                : null
+            }
+            onRespond={respond}
+          />
+        )}
       </RailSection>
 
       <RailSection
@@ -51,11 +64,11 @@ export function Invitation({ wedding, places, story, gifts, payment }: Invitatio
         title="Presentes"
         intro="Cada artigo só pode ser oferecido por uma pessoa. Nos presentes em dinheiro, todos podem contribuir."
       >
-        <Gifts gifts={gifts} payment={payment} guestName={guestName} />
+        <Gifts supabase={supabase} weddingId={weddingId} initialGifts={gifts} guestId={guest?.id ?? null} />
       </RailSection>
 
       <RailSection id="memorias" title="Memórias" intro="No dia e depois, partilha aqui as fotos e vídeos que tirares." last>
-        <Memories guestName={guestName} />
+        <Memories supabase={supabase} weddingId={weddingId} guestId={guest?.id ?? null} />
       </RailSection>
     </Rail>
   );

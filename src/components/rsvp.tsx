@@ -12,9 +12,10 @@ export type GuestResponse = {
 
 type RsvpProps = {
   maxCompanions: number;
-  deadline: string;
+  deadline: string | null;
   response: GuestResponse | null;
-  onRespond: (response: GuestResponse) => void;
+  /** Grava a resposta; devolve uma mensagem de erro ou null. */
+  onRespond: (response: GuestResponse) => Promise<string | null>;
 };
 
 export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps) {
@@ -23,11 +24,13 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
   const [attending, setAttending] = useState<boolean | null>(response?.attending ?? null);
   const [companions, setCompanions] = useState(response?.companions ?? 0);
   const [message, setMessage] = useState(response?.message ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const deadlineText = new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long" }).format(
-    new Date(`${deadline}T12:00:00Z`),
-  );
-  const canSend = name.trim().length >= 2 && attending !== null;
+  const deadlineText = deadline
+    ? new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long" }).format(new Date(`${deadline}T12:00:00Z`))
+    : null;
+  const canSend = name.trim().length >= 2 && attending !== null && !saving;
 
   if (response && !editing) {
     const people = response.companions;
@@ -48,11 +51,20 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
   return (
     <form
       className="space-y-8"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         if (!canSend) return;
-        onRespond({ name: name.trim(), attending: attending!, companions: attending ? companions : 0, message: message.trim() });
-        setEditing(false);
+        setSaving(true);
+        setError(null);
+        const problem = await onRespond({
+          name: name.trim(),
+          attending: attending!,
+          companions: attending ? companions : 0,
+          message: message.trim(),
+        });
+        setSaving(false);
+        if (problem) setError(problem);
+        else setEditing(false);
       }}
     >
       <div>
@@ -153,10 +165,15 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <button type="submit" className={buttonPrimary} disabled={!canSend}>
-          Enviar resposta
+          {saving ? "A enviar…" : "Enviar resposta"}
         </button>
-        <p className="text-sm text-pedra">Responde até {deadlineText}.</p>
+        {deadlineText && <p className="text-sm text-pedra">Responde até {deadlineText}.</p>}
       </div>
+      {error && (
+        <p role="alert" className="text-sm font-medium text-vinho">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
