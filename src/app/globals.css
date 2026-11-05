@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
+/* Tokens — ver docs/DESIGN.md */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --porcelana: #f7f8fb;
+  --tinta: #18203a;
+  --cobalto: #2348b8;
+  --pedra: #5a6382;
+  --nevoa: #dce2ee;
+  --esmalte: #e9eefb;
+  --sobre-cobalto: #ffffff;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --porcelana: #0f1527;
+    --tinta: #e6eaf4;
+    --cobalto: #8aa4ff;
+    --pedra: #a3abc5;
+    --nevoa: #28304a;
+    --esmalte: #18213d;
+    --sobre-cobalto: #0f1527;
+    color-scheme: dark;
   }
 }
 
+:root[data-theme="dark"] {
+  --porcelana: #0f1527;
+  --tinta: #e6eaf4;
+  --cobalto: #8aa4ff;
+  --pedra: #a3abc5;
+  --nevoa: #28304a;
+  --esmalte: #18213d;
+  --sobre-cobalto: #0f1527;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-porcelana: var(--porcelana);
+  --color-tinta: var(--tinta);
+  --color-cobalto: var(--cobalto);
+  --color-pedra: var(--pedra);
+  --color-nevoa: var(--nevoa);
+  --color-esmalte: var(--esmalte);
+  --color-sobre-cobalto: var(--sobre-cobalto);
+
+  --font-display: var(--font-italiana);
+  --font-sans: var(--font-hanken);
+
+  /* Escala ~1,333 sobre 17 px */
+  --text-sm: 0.8125rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.875rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3.3125rem;
+}
+
+html {
+  background: var(--porcelana);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--porcelana);
+  color: var(--tinta);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cobalto);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--esmalte);
+  color: var(--tinta);
+}
+
+/* O único momento de movimento: o fio desenha o laço ao abrir. */
+/* Valor maior do que o fio em qualquer ecrã (o traço não escala com o SVG). */
+.fio-desenhar {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation: fio 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+}
+
+@keyframes fio {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fio-desenhar {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Mapa: tons frios para combinar com a porcelana. */
+.mapa-porcelana .leaflet-tile-pane {
+  filter: grayscale(1) sepia(0.15) hue-rotate(185deg) saturate(1.4) brightness(1.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mapa-porcelana .leaflet-tile-pane {
+    filter: grayscale(1) invert(1) hue-rotate(195deg) brightness(0.8) contrast(0.9);
+  }
+}
+.mapa-porcelana .leaflet-container {
+  background: var(--esmalte);
+  font-family: inherit;
 }
