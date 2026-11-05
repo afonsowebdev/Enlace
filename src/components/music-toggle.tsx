@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { OPEN_EVENT } from "./envelope-intro";
+import { useRef, useState } from "react";
 
-/** Botão flutuante da música. Começa quando o convidado abre o envelope; pode ser pausada. */
+/** Botão flutuante da música. Os browsers não deixam tocar sozinha: começa quando o convidado carrega. */
 export function MusicToggle({ src }: { src: string | null }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    if (!src) return;
-    const start = () => audioRef.current?.play().then(() => setPlaying(true)).catch(() => {});
-    window.addEventListener(OPEN_EVENT, start);
-    return () => window.removeEventListener(OPEN_EVENT, start);
-  }, [src]);
 
   if (!src) return null;
 

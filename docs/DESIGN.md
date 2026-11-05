@@ -4,7 +4,7 @@
 
 **Enlace** quer dizer união e também laço. Um **fio vinho** enlaça-se entre os nomes dos noivos e desce pela página, ligando cada passo do convidado; em cada secção há um nó que se acende quando o convidado lá chega.
 
-A direção visual segue o pedido dos noivos (05-11-2026), inspirada num convite de referência em **vinho e papel creme**: elegante, clássico, com flores e um ritual de abertura. O Enlace não copia esse modelo — usa as suas próprias peças: o fio, a letra Lamoric Rowen, raminhos desenhados em código e um envelope com selo de lacre.
+A direção visual segue o pedido dos noivos (05-11-2026), inspirada num convite de referência em **vinho e papel creme**: elegante, clássico, com flores e um cartão de convite impresso. O Enlace não copia esse modelo — usa as suas próprias peças: o fio, a letra Lamoric Rowen, raminhos desenhados em código e fotografias impressas.
 
 ## Cores
 
@@ -26,23 +26,24 @@ A direção visual segue o pedido dos noivos (05-11-2026), inspirada num convite
 
 ## Ritmo da página
 
-1. **Envelope** (ecrã inteiro, vinho com pétalas a subir): selo de lacre com as iniciais. "Abrir convite" → o selo parte, a aba abre, o convite sobe, o ecrã desaparece. Na mesma visita não volta a aparecer. Começa a música, se houver.
-2. **Abertura**: nomes (tamanho ajustado ao comprimento), o laço desenhado, foto do casal em arco que abre como cortina, data, contagem decrescente.
-3. **Cartão-convite** vinho com filete dourado: pais, frase de convite, nomes, cerimónia e receção (dia em grande).
-4. **A nossa história**: momentos por ano; as fotos abrem com o scroll. Em ecrãs grandes, as fotos ficam numa coluna fixa à direita e mudam com o momento que se lê.
+O link abre diretamente a página (sem ecrã de entrada).
+
+1. **Abertura**: nomes (tamanho ajustado ao comprimento), o laço desenhado, **fotografia impressa** do casal (moldura branca, inclinada, com os nomes em baixo), data, contagem decrescente e mensagem.
+2. **Cartão-convite** vinho com filete dourado: pais, frase de convite, nomes, cerimónia e receção. Blocos separados por **ornamentos dourados** (linha, flor, linha); em cada evento, linhas verticais separam hora | dia da semana e dia | mês e ano.
+3. **"Responder ao convite"** logo a seguir ao cartão: primeiro lê-se o convite, depois responde-se.
+4. **A nossa história**: em cada momento, o ano em grande, um título, uma fotografia impressa grande (inclinada alternadamente para cada lado) e o texto; momentos separados por ornamentos.
 5. **Onde e quando** (separadores Cerimónia/Receção, mapa sépia), **Vens?**, **Presentes**, **Memórias**.
 
 ## Movimento
 
 - O conteúdo revela-se ao entrar no ecrã (sobe e ganha nitidez), uma vez.
 - O fio enche-se com o scroll; os nós acendem.
-- As fotos têm cortina, zoom lento e parallax leve.
-- As animações da abertura esperam que o envelope abra.
+- As fotografias "pousam" na página ao entrar no ecrã (descem e rodam até à inclinação final), com zoom lento e parallax leve.
 - "Reduzir movimento" do sistema: sem deslocações nem escalas; o fio aparece já desenhado.
 
 ## Princípios
 
-1. **Uma ação de cada vez**, com botões que dizem o que acontece ("Abrir convite", "Enviar resposta", "Reservar", "Registar contribuição").
+1. **Uma ação de cada vez**, com botões que dizem o que acontece ("Responder ao convite", "Enviar resposta", "Reservar", "Registar contribuição").
 2. **Listas, não grelhas de cartões**, nos presentes.
 3. **Portugal**: `12 de junho de 2027`, `16h00`, `1500 €` e `95,50 €`, IBAN em blocos de quatro.
-4. **Telemóvel primeiro**; no computador, a coluna das fotos ocupa o espaço livre.
+4. **Telemóvel primeiro**; no computador, uma coluna central com os raminhos a enquadrar as margens.

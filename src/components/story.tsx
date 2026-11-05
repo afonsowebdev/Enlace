@@ -1,37 +1,45 @@
 "use client";
 
-import { motion } from "motion/react";
-import { ArchPhoto } from "./arch-photo";
-import { usePhotoStage } from "./photo-stage";
+import { Ornament } from "./ornament";
+import { PrintPhoto } from "./print-photo";
 import { Reveal } from "./reveal";
 
-export type StoryMoment = { year: string; text: string; photo: { src: string; alt: string } };
+export type StoryMoment = {
+  year: string;
+  title: string;
+  text: string;
+  photo: { src: string; alt: string };
+};
 
-/** A história do casal, por anos. As fotos alternam de lado e abrem ao chegar ao ecrã. */
+/**
+ * A história do casal, por anos. Cada momento tem o ano em grande, um título,
+ * uma fotografia impressa (inclinada alternadamente) e um pequeno texto.
+ */
 export function Story({ moments }: { moments: StoryMoment[] }) {
-  const { active, show } = usePhotoStage();
   return (
-    <ol className="space-y-16 lg:space-y-[28vh] lg:pb-[10vh]">
+    <ol>
       {moments.map((m, i) => {
         const right = i % 2 === 1;
         return (
-          <motion.li
-            key={m.year}
-            className={`flex flex-col transition-opacity duration-700 lg:items-start lg:text-left ${right ? "items-end text-right" : "items-start"} ${active === i + 1 ? "" : "lg:opacity-35"}`}
-            onViewportEnter={() => show(i + 1)}
-            viewport={{ margin: "-45% 0px -45% 0px" }}
-          >
-            <ArchPhoto
+          <li key={m.year}>
+            {i > 0 && <Ornament className="my-16 text-dourado" />}
+
+            <Reveal className={right ? "text-right" : ""}>
+              <p className="font-display text-[4.5rem] leading-[0.85] text-vinho sm:text-[5.5rem]">{m.year}</p>
+              <h3 className="mt-2 font-display text-[1.6rem] leading-tight">{m.title}</h3>
+            </Reveal>
+
+            <PrintPhoto
               src={m.photo.src}
               alt={m.photo.alt}
-              className="aspect-[4/5] w-[78%] lg:hidden"
-              sizes="(min-width: 640px) 26rem, 70vw"
+              tilt={right ? 2.5 : -2.5}
+              className={`mt-8 w-[94%] ${right ? "ml-auto" : ""}`}
             />
-            <Reveal className="mt-5 max-w-[78%] lg:mt-0 lg:max-w-none" delay={0.15}>
-              <p className="font-display text-2xl text-vinho lg:text-[3.5rem] lg:leading-none">{m.year}</p>
-              <p className="mt-1 lg:mt-3 lg:max-w-[34ch] lg:text-lg">{m.text}</p>
+
+            <Reveal className={`mt-8 ${right ? "text-right" : ""}`} delay={0.1}>
+              <p className={`max-w-[42ch] text-[1.05rem] leading-relaxed ${right ? "ml-auto" : ""}`}>{m.text}</p>
             </Reveal>
-          </motion.li>
+          </li>
         );
       })}
     </ol>

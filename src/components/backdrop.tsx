@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { useInviteOpened } from "./envelope-intro";
 
 /**
  * Fundo do convite: raminhos pintados a vinho, como na louça portuguesa,
@@ -122,7 +121,6 @@ export function Sprig({
   blossomColor?: string;
 }) {
   const { stem, parts } = BUILT[variant];
-  const opened = useInviteOpened();
   return (
     <svg viewBox="0 0 400 400" className={`h-auto w-full ${flip ? "-scale-x-100" : ""}`} fill="none">
       <motion.path
@@ -131,7 +129,7 @@ export function Sprig({
         strokeWidth={1.2}
         strokeLinecap="round"
         initial={{ pathLength: 0 }}
-        animate={{ pathLength: opened ? 1 : 0 }}
+        animate={{ pathLength: 1 }}
         transition={{ duration: 2.2, ease: [0.65, 0, 0.35, 1], delay: 0.4 }}
       />
       {parts.map((d, i) => (
@@ -143,7 +141,7 @@ export function Sprig({
           strokeLinecap="round"
           strokeLinejoin="round"
           initial={{ pathLength: 0, opacity: 0 }}
-          animate={opened ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
           transition={{ duration: 1.1, ease: "easeOut", delay: 0.9 + i * 0.045 }}
         />
       ))}

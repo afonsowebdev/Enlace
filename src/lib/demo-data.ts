@@ -103,8 +103,28 @@ export const demoGifts: DemoGift[] = [
 export const demoCoverPhoto = { src: "/demo/casal-1.jpg", alt: "Maria e João, abraçados" };
 
 export const demoStory = [
-  { year: "2016", text: "Conhecemo-nos num jantar de amigos, em Alfama. O João chegou atrasado.", photo: { src: "/demo/casal-2.jpg", alt: "Maria e João no primeiro jantar" } },
-  { year: "2019", text: "A primeira casa, e o Bacalhau, que escolheu ficar connosco.", photo: { src: "/demo/casal-3.jpg", alt: "Maria e João com o cão Bacalhau" } },
-  { year: "2025", text: "O pedido, ao pôr do sol, numa praia da Comporta.", photo: { src: "/demo/casal-4.jpg", alt: "O pedido de casamento na praia" } },
-  { year: "2027", text: "Agora falta o mais importante: tu, connosco, neste dia.", photo: { src: "/demo/casal-5.jpg", alt: "Maria e João a sorrir" } },
+  {
+    year: "2016",
+    title: "O primeiro jantar",
+    text: "Conhecemo-nos num jantar de amigos, em Alfama. O João chegou atrasado, sentou-se ao lado da Maria e ficaram a conversar até fecharem o restaurante.",
+    photo: { src: "/demo/casal-2.jpg", alt: "Maria e João no primeiro jantar" },
+  },
+  {
+    year: "2019",
+    title: "A primeira casa",
+    text: "Uma casa pequena, com uma varanda virada para o rio, e o Bacalhau, que apareceu à porta numa noite de chuva e decidiu ficar.",
+    photo: { src: "/demo/casal-3.jpg", alt: "Maria e João com o cão Bacalhau" },
+  },
+  {
+    year: "2025",
+    title: "O pedido",
+    text: "Ao pôr do sol, numa praia da Comporta. O anel esteve escondido três semanas dentro de uma caixa de chá.",
+    photo: { src: "/demo/casal-4.jpg", alt: "O pedido de casamento na praia" },
+  },
+  {
+    year: "2027",
+    title: "O sim",
+    text: "Agora falta o mais importante: tu, connosco, neste dia.",
+    photo: { src: "/demo/casal-5.jpg", alt: "Maria e João a sorrir" },
+  },
 ];

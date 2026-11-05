@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { formatWeddingTime } from "@/lib/format";
 import { Sprig } from "./backdrop";
+import { Ornament } from "./ornament";
 import { Reveal } from "./reveal";
 
 type Event = { label: string; place: string; startsAt: string };
@@ -28,7 +29,7 @@ function dateParts(iso: string, timeZone: string) {
 
 /**
  * O cartão-convite: vinho, como papel de convite impresso, com os pais,
- * os noivos, a cerimónia e a receção. Um raminho sai pela margem direita.
+ * os noivos, a cerimónia e a receção, separados por ornamentos dourados.
  */
 export function InvitationCard({ partnerOneName, partnerTwoName, parents, events, timeZone }: InvitationCardProps) {
   return (
@@ -44,12 +45,19 @@ export function InvitationCard({ partnerOneName, partnerTwoName, parents, events
         <span aria-hidden="true" className="pointer-events-none absolute inset-3 rounded-xl border border-dourado/50" />
         <span aria-hidden="true" className="grao pointer-events-none absolute inset-0" />
 
-        <Reveal className="relative grid grid-cols-2 gap-4 text-sm">
-          <ParentsColumn title={`Pais de ${partnerOneName}`} names={parents.partnerOne} />
-          <ParentsColumn title={`Pais de ${partnerTwoName}`} names={parents.partnerTwo} divider />
+        <Reveal className="relative">
+          <p className="font-display text-[0.95rem] tracking-[0.06em] text-dourado sm:text-lg">Convite de casamento</p>
         </Reveal>
 
-        <Reveal className="relative mt-10" delay={0.1}>
+        <Reveal className="relative mt-6 grid grid-cols-[1fr_auto_1fr] items-stretch gap-4 text-sm" delay={0.05}>
+          <ParentsColumn title={`Pais de ${partnerOneName}`} names={parents.partnerOne} />
+          <span aria-hidden="true" className="w-px bg-dourado/60" />
+          <ParentsColumn title={`Pais de ${partnerTwoName}`} names={parents.partnerTwo} />
+        </Reveal>
+
+        <Ornament className="relative mt-9 text-dourado" />
+
+        <Reveal className="relative mt-8" delay={0.1}>
           <p className="text-[0.95rem] leading-relaxed opacity-90">
             Têm a alegria de vos convidar
             <br />
@@ -63,43 +71,48 @@ export function InvitationCard({ partnerOneName, partnerTwoName, parents, events
           <p className="font-display text-[clamp(2.4rem,11vw,3.6rem)] leading-none">{partnerTwoName}</p>
         </Reveal>
 
-        <div className="relative mt-12 space-y-10">
-          {events.map((ev, i) => {
-            const p = dateParts(ev.startsAt, timeZone);
-            return (
-              <Reveal key={ev.label} delay={0.1 + i * 0.1}>
-                <p className="font-display text-xl tracking-wide">{ev.label}</p>
+        {events.map((ev, i) => {
+          const p = dateParts(ev.startsAt, timeZone);
+          return (
+            <div key={ev.label} className="relative">
+              <Ornament className="mt-10 text-dourado" />
+              <Reveal className="mt-8" delay={0.1 + i * 0.1}>
+                <p className="font-display text-2xl tracking-wide">{ev.label}</p>
                 <p className="mt-1 opacity-85">{ev.place}</p>
-                <div className="mt-4 flex items-center justify-center gap-4">
-                  <p className="text-right text-sm leading-tight opacity-85">
-                    <span className="block capitalize">{p.weekday}</span>
-                    <span className="block">às {formatWeddingTime(ev.startsAt, timeZone)}</span>
-                  </p>
-                  <span aria-hidden="true" className="h-12 w-px bg-dourado/60" />
-                  <p className="font-display text-5xl leading-none">{p.day}</p>
-                  <span aria-hidden="true" className="h-12 w-px bg-dourado/60" />
-                  <p className="text-left text-sm leading-tight opacity-85">
-                    <span className="block capitalize">{p.month}</span>
-                    <span className="block">{p.year}</span>
+
+                {/* hora | dia da semana */}
+                <div className="mt-5 flex items-center justify-center gap-5 text-sm opacity-90">
+                  <span>às {formatWeddingTime(ev.startsAt, timeZone)}</span>
+                  <span aria-hidden="true" className="h-4 w-px bg-dourado/60" />
+                  <span className="capitalize">{p.weekday}</span>
+                </div>
+
+                {/* dia | mês e ano */}
+                <div className="mt-4 flex items-center justify-center gap-5">
+                  <p className="font-display text-6xl leading-none">{p.day}</p>
+                  <span aria-hidden="true" className="h-14 w-px bg-dourado/70" />
+                  <p className="text-left leading-tight">
+                    <span className="block font-medium capitalize">{p.month}</span>
+                    <span className="block opacity-85">{p.year}</span>
                   </p>
                 </div>
               </Reveal>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </motion.div>
 
       {/* raminho a sair pela margem do cartão */}
-      <div aria-hidden="true" className="pointer-events-none absolute -top-10 -right-10 w-44 rotate-[18deg] text-dourado opacity-90 sm:-right-16 sm:w-56">
+      <div aria-hidden="true" className="pointer-events-none absolute -top-16 -right-12 w-36 rotate-[24deg] text-dourado opacity-90 sm:-top-20 sm:-right-20 sm:w-52">
         <Sprig variant={0} blossomColor="var(--rubor)" />
       </div>
     </div>
   );
 }
 
-function ParentsColumn({ title, names, divider = false }: { title: string; names: string[]; divider?: boolean }) {
+function ParentsColumn({ title, names }: { title: string; names: string[] }) {
   return (
-    <div className={divider ? "border-l border-dourado/40" : ""}>
+    <div>
       <p className="text-xs opacity-75">{title}</p>
       {names.map((n) => (
         <p key={n} className="mt-1 font-medium">

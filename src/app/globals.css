@@ -90,17 +90,12 @@ body {
   color: var(--tinta);
 }
 
-/* O fio desenha o laço entre os nomes quando o convite abre. */
+/* O fio desenha o laço entre os nomes ao abrir a página. */
 /* Valor maior do que o fio em qualquer ecrã (o traço não escala com o SVG). */
 .fio-desenhar {
   stroke-dasharray: 2400;
   stroke-dashoffset: 2400;
   animation: fio 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
-}
-
-.fio-escondido {
-  stroke-dasharray: 2400;
-  stroke-dashoffset: 2400;
 }
 
 @keyframes fio {
@@ -110,8 +105,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fio-desenhar,
-  .fio-escondido {
+  .fio-desenhar {
     animation: none;
     stroke-dashoffset: 0;
   }
@@ -140,7 +134,3 @@ body {
   :root:not([data-theme="light"]) .grao { opacity: 0.12; mix-blend-mode: screen; }
 }
 
-/* Moldura em arco, como a porta de uma igreja ou um arco de flores. */
-.arco {
-  border-radius: 999px 999px 0.75rem 0.75rem;
-}
