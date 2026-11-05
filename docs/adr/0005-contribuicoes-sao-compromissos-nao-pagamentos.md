@@ -1,0 +1,3 @@
+# Contribuições são compromissos, não pagamentos processados pelo site
+
+Os presentes em dinheiro recebem contribuições de vários convidados. O site não processa pagamentos: o convidado regista quanto vai dar e por que meio, e vê o IBAN ou o MB WAY dos noivos para pagar fora do site. Os noivos marcam cada contribuição como recebida quando o dinheiro chega. Integrar um gateway (Stripe, SIBS/MB WAY API) traria comissões por transação, contrato com uma entidade de pagamentos e obrigações legais desproporcionadas para um casamento; a contrapartida aceite é a conferência manual pelos noivos. Os dados de pagamento ficam numa tabela à parte, visível só para convidados registados, para não ficarem expostos a quem apenas abre o link.

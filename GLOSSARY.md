@@ -12,6 +12,10 @@ _Avoid_: Casal (como papel), anfitriões, administradores, donos
 Pessoa que abriu o convite e se registou com o seu nome.
 _Avoid_: Visitante, utilizador, participante
 
+**Acompanhante**:
+Pessoa que vem ao casamento com um convidado confirmado, sem registo próprio. Os noivos definem quantos acompanhantes cada convidado pode trazer.
+_Avoid_: +1, convidado extra, plus-one
+
 ## Casamento
 
 **Casamento**:
@@ -43,12 +47,28 @@ O conjunto de presentes que os noivos gostariam de receber.
 _Avoid_: Wishlist, lista de casamento, registry
 
 **Presente**:
-Um artigo da lista de presentes, com nome, descrição, imagem e valor de referência.
+Uma entrada da lista de presentes: um artigo ou um presente em dinheiro.
 _Avoid_: Item, produto, oferta
 
+**Artigo**:
+Presente físico, com valor de referência, que um só convidado oferece.
+_Avoid_: Produto, objeto, presente único
+
+**Presente em dinheiro**:
+Presente para o qual vários convidados contribuem com dinheiro, com ou sem objetivo (ex.: voo da lua de mel).
+_Avoid_: Fundo, vaquinha, presente partilhado
+
 **Reserva**:
-O compromisso de um convidado de oferecer um presente. Um presente tem no máximo uma reserva.
+O compromisso de um convidado de oferecer um artigo. Um artigo tem no máximo uma reserva.
 _Avoid_: Escolha, seleção, compra
+
+**Contribuição**:
+O compromisso de um convidado de dar um valor para um presente em dinheiro, pago por transferência ou MB WAY. Fica recebida quando os noivos confirmam que o dinheiro chegou.
+_Avoid_: Doação, pagamento, transferência
+
+**Dados de pagamento**:
+O IBAN e o número MB WAY dos noivos, que só os convidados veem.
+_Avoid_: Conta, dados bancários
 
 ## Memórias
 
@@ -57,5 +77,5 @@ Uma foto ou vídeo do casamento enviado por um convidado.
 _Avoid_: Upload, ficheiro, media, conteúdo
 
 **Galeria**:
-O conjunto de todas as memórias de um casamento, que só os noivos veem e descarregam.
+O conjunto de todas as memórias de um casamento, que todos os convidados veem e só os noivos descarregam.
 _Avoid_: Álbum, arquivo

@@ -6,12 +6,14 @@ const NOIVO = "00000000-0000-0000-0000-00000000000a";
 const ANA = "00000000-0000-0000-0000-000000000001"; // convidada
 const RUI = "00000000-0000-0000-0000-000000000002"; // convidado
 const OUTRO_NOIVO = "00000000-0000-0000-0000-00000000000b";
+const DESCONHECIDO = "00000000-0000-0000-0000-000000000009"; // sessão sem registo como convidado
 
 let db: PGlite;
 let weddingId: number;
 let otherWeddingId: number;
 let giftId: number;
 let otherGiftId: number;
+let moneyGiftId: number;
 
 async function registerGuest(userId: string, name: string, wid = weddingId) {
   return asUser(db, userId, async (tx) => {
@@ -27,7 +29,8 @@ beforeEach(async () => {
   db = await createTestDb();
   await db.exec(`
     insert into auth.users (id, is_anonymous) values
-      ('${NOIVO}', false), ('${OUTRO_NOIVO}', false), ('${ANA}', true), ('${RUI}', true);
+      ('${NOIVO}', false), ('${OUTRO_NOIVO}', false), ('${ANA}', true), ('${RUI}', true),
+      ('${DESCONHECIDO}', true);
   `);
   const w = await db.query<{ id: number }>(`
     insert into weddings (slug, partner_one_name, partner_two_name, starts_at, venue_name, venue_address)
@@ -45,6 +48,12 @@ beforeEach(async () => {
   );
   giftId = g.rows[0].id;
   otherGiftId = g.rows[2].id;
+  const m = await db.query<{ id: number }>(
+    `insert into gifts (wedding_id, kind, name, price_cents) values ($1, 'money', 'Voo da lua de mel', 150000) returning id`,
+    [weddingId],
+  );
+  moneyGiftId = m.rows[0].id;
+  await db.query(`update weddings set max_companions = 2 where id = $1`, [weddingId]);
 });
 
 describe("convite público", () => {
@@ -55,7 +64,7 @@ describe("convite público", () => {
       return { w: w.rows, g: g.rows };
     });
     expect(rows.w).toHaveLength(1);
-    expect(rows.g).toHaveLength(2);
+    expect(rows.g).toHaveLength(3); // 2 artigos + 1 presente em dinheiro
   });
 
   it("um visitante sem sessão não consegue registar-se nem alterar nada", async () => {
@@ -201,7 +210,7 @@ describe("memórias", () => {
     });
   }
 
-  it("o convidado envia para a sua pasta e só os noivos veem a galeria completa", async () => {
+  it("todos os convidados do casamento veem a galeria; quem não é convidado não vê", async () => {
     const ana = await registerGuest(ANA, "Ana Silva");
     const rui = await registerGuest(RUI, "Rui Costa");
     await addMemory(ANA, ana, `${weddingId}/${ana}/foto1.jpg`);
@@ -212,9 +221,20 @@ describe("memórias", () => {
         rows: (await tx.query(`select 1 from memories`)).rows.length,
         files: (await tx.query(`select 1 from storage.objects`)).rows.length,
       }));
-    expect(await count(ANA)).toEqual({ rows: 1, files: 1 });
+    expect(await count(ANA)).toEqual({ rows: 2, files: 2 });
     expect(await count(NOIVO)).toEqual({ rows: 2, files: 2 });
     expect(await count(OUTRO_NOIVO)).toEqual({ rows: 0, files: 0 });
+    expect(await count(DESCONHECIDO)).toEqual({ rows: 0, files: 0 });
+  });
+
+  it("um convidado não apaga as memórias de outro; os noivos podem", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await registerGuest(RUI, "Rui Costa");
+    await addMemory(ANA, ana, `${weddingId}/${ana}/foto1.jpg`);
+    const byRui = await asUser(db, RUI, (tx) => tx.query(`delete from memories`));
+    expect(byRui.affectedRows).toBe(0);
+    const byHost = await asUser(db, NOIVO, (tx) => tx.query(`delete from memories`));
+    expect(byHost.affectedRows).toBe(1);
   });
 
   it("o convidado não envia ficheiros para a pasta de outro convidado", async () => {
@@ -231,21 +251,154 @@ describe("dados de exemplo", () => {
     await fresh.exec(readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8"));
     const r = await fresh.query(`select count(*)::int as n from gifts`);
     expect(r.rows[0]).toEqual({ n: 5 });
+    const p = await fresh.query(`select count(*)::int as n from wedding_payment_details`);
+    expect(p.rows[0]).toEqual({ n: 1 });
+  });
+});
+
+describe("presentes em dinheiro", () => {
+  async function contribute(userId: string, guestId: number, amount: number, gift = moneyGiftId) {
+    return asUser(db, userId, (tx) =>
+      tx.query(
+        `insert into gift_contributions (wedding_id, gift_id, guest_id, amount_cents, payment_method)
+         values ($1, $2, $3, $4, 'mbway')`,
+        [weddingId, gift, guestId, amount],
+      ),
+    );
+  }
+
+  it("vários convidados contribuem para o mesmo presente e a lista mostra o total", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    const rui = await registerGuest(RUI, "Rui Costa");
+    await contribute(ANA, ana, 5000);
+    await contribute(RUI, rui, 7500);
+    await contribute(ANA, ana, 2500);
+    const r = await asAnon(db, (tx) =>
+      tx.query(`select contributed_cents from gifts where id = $1`, [moneyGiftId]),
+    );
+    expect(r.rows[0]).toEqual({ contributed_cents: 15000 });
+  });
+
+  it("cada convidado vê só as suas contribuições; os noivos veem todas", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    const rui = await registerGuest(RUI, "Rui Costa");
+    await contribute(ANA, ana, 5000);
+    await contribute(RUI, rui, 7500);
+    const seen = (u: string) => asUser(db, u, (tx) => tx.query(`select amount_cents from gift_contributions`));
+    expect((await seen(ANA)).rows).toEqual([{ amount_cents: 5000 }]);
+    expect((await seen(NOIVO)).rows).toHaveLength(2);
+  });
+
+  it("um presente em dinheiro não se reserva, e um artigo não recebe contribuições", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await expect(
+      asUser(db, ANA, (tx) =>
+        tx.query(`insert into gift_reservations (wedding_id, gift_id, guest_id) values ($1, $2, $3)`, [weddingId, moneyGiftId, ana]),
+      ),
+    ).rejects.toThrow(/gift_reservations_gift_fk/);
+    await expect(contribute(ANA, ana, 5000, giftId)).rejects.toThrow(/gift_contributions_gift_fk/);
+  });
+
+  it("só os noivos confirmam a receção; depois disso o convidado já não desiste", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await contribute(ANA, ana, 5000);
+    const byGuest = await asUser(db, ANA, (tx) => tx.query(`update gift_contributions set received_at = now()`));
+    expect(byGuest.affectedRows).toBe(0);
+    const byHost = await asUser(db, NOIVO, (tx) => tx.query(`update gift_contributions set received_at = now()`));
+    expect(byHost.affectedRows).toBe(1);
+    const cancel = await asUser(db, ANA, (tx) => tx.query(`delete from gift_contributions`));
+    expect(cancel.affectedRows).toBe(0);
+  });
+
+  it("o convidado não altera o valor depois de contribuir", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await contribute(ANA, ana, 5000);
+    await expect(
+      asUser(db, ANA, (tx) => tx.query(`update gift_contributions set amount_cents = 1`)),
+    ).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("dados de pagamento dos noivos", () => {
+  beforeEach(async () => {
+    await asUser(db, NOIVO, (tx) =>
+      tx.query(
+        `insert into wedding_payment_details (wedding_id, holder_name, iban, mbway_phone)
+         values ($1, 'Maria e João', 'PT50000201231234567890154', '+351912345678')`,
+        [weddingId],
+      ),
+    );
+  });
+
+  it("só os convidados registados e os noivos veem o IBAN e o MB WAY", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    const read = (u: string) => asUser(db, u, (tx) => tx.query(`select iban from wedding_payment_details`));
+    expect((await read(ANA)).rows).toHaveLength(1);
+    expect((await read(NOIVO)).rows).toHaveLength(1);
+    expect((await read(DESCONHECIDO)).rows).toHaveLength(0);
+    await expect(
+      asAnon(db, (tx) => tx.query(`select iban from wedding_payment_details`)),
+    ).rejects.toThrow(/permission denied/);
+  });
+
+  it("um convidado não altera os dados de pagamento", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    const r = await asUser(db, ANA, (tx) =>
+      tx.query(`update wedding_payment_details set iban = 'PT50999999999999999999999'`),
+    );
+    expect(r.affectedRows).toBe(0);
+  });
+});
+
+describe("acompanhantes", () => {
+  it("o convidado confirma com acompanhantes até ao máximo definido pelos noivos", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    const r = await asUser(db, ANA, (tx) =>
+      tx.query(`update guests set rsvp_status = 'attending', companions = 2 returning companions`),
+    );
+    expect(r.rows[0]).toEqual({ companions: 2 });
+  });
+
+  it("não é possível trazer mais acompanhantes do que o máximo", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    await expect(
+      asUser(db, ANA, (tx) => tx.query(`update guests set rsvp_status = 'attending', companions = 3`)),
+    ).rejects.toThrow(/companions_exceed_limit/);
+  });
+
+  it("ao recusar o convite, os acompanhantes passam a zero", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    await asUser(db, ANA, (tx) => tx.query(`update guests set rsvp_status = 'attending', companions = 2`));
+    const r = await asUser(db, ANA, (tx) =>
+      tx.query(`update guests set rsvp_status = 'declined' returning companions`),
+    );
+    expect(r.rows[0]).toEqual({ companions: 0 });
   });
 });
 
 describe("estatísticas do painel", () => {
-  it("os noivos veem os totais de respostas, presentes e memórias", async () => {
+  it("os noivos veem os totais de respostas, pessoas, presentes, contribuições e memórias", async () => {
     const ana = await registerGuest(ANA, "Ana Silva");
-    await registerGuest(RUI, "Rui Costa");
-    await asUser(db, ANA, (tx) => tx.query(`update guests set rsvp_status = 'attending' where user_id = $1`, [ANA]));
+    const rui = await registerGuest(RUI, "Rui Costa");
+    await asUser(db, ANA, (tx) =>
+      tx.query(`update guests set rsvp_status = 'attending', companions = 1 where user_id = $1`, [ANA]),
+    );
     await asUser(db, ANA, (tx) =>
       tx.query(`insert into gift_reservations (wedding_id, gift_id, guest_id) values ($1, $2, $3)`, [weddingId, giftId, ana]),
+    );
+    await asUser(db, RUI, (tx) =>
+      tx.query(
+        `insert into gift_contributions (wedding_id, gift_id, guest_id, amount_cents, payment_method)
+         values ($1, $2, $3, 10000, 'bank_transfer')`,
+        [weddingId, moneyGiftId, rui],
+      ),
     );
     const s = await asUser(db, NOIVO, (tx) => tx.query(`select * from wedding_stats($1)`, [weddingId]));
     expect(s.rows[0]).toMatchObject({
       guests_total: 2, guests_attending: 1, guests_pending: 1, guests_declined: 0,
-      gifts_total: 2, gifts_reserved: 1, gifts_value_cents: 16500, gifts_reserved_cents: 12000,
+      people_attending: 2,
+      items_total: 2, items_reserved: 1, items_value_cents: 16500, items_reserved_cents: 12000,
+      money_gifts_total: 1, contributions_total: 1, contributed_cents: 10000, received_cents: 0,
       memories_total: 0,
     });
   });
