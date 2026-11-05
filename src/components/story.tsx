@@ -33,7 +33,7 @@ export function Story({ moments }: { moments: StoryMoment[] }) {
               src={m.photo.src}
               alt={m.photo.alt}
               tilt={right ? 2.5 : -2.5}
-              className={`mt-8 w-[94%] ${right ? "ml-auto" : ""}`}
+              className={`mt-8 w-[76%] sm:w-[70%] ${right ? "ml-auto mr-2" : "ml-2"}`}
             />
 
             <Reveal className={`mt-8 ${right ? "text-right" : ""}`} delay={0.1}>

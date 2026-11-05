@@ -1,7 +1,7 @@
 // Peças pequenas partilhadas. Raio: botões em pílula, campos com 6 px.
 
 export const buttonPrimary =
-  "inline-flex items-center justify-center rounded-full bg-vinho px-6 py-3 font-medium text-sobre-vinho transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center rounded-full bg-cartao px-6 py-3 font-medium text-sobre-cartao transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
 
 export const buttonQuiet =
   "inline-flex items-center justify-center rounded-full border border-nevoa px-5 py-2.5 font-medium transition-colors hover:border-vinho hover:text-vinho";

@@ -3,9 +3,14 @@
 
 export type GiftKind = "item" | "money";
 
+export type GiftIcon = "plane" | "coffee" | "bed" | "pan" | "envelope" | "vase" | "glasses";
+
 export type DemoGift = {
   id: number;
   kind: GiftKind;
+  /** Ilustração provisória; na fase 2 os noivos podem carregar uma foto (image_url). */
+  icon: GiftIcon;
+  purchaseUrl?: string;
   name: string;
   description: string;
   priceCents: number | null;
@@ -52,51 +57,13 @@ export const demoPaymentDetails = {
 };
 
 export const demoGifts: DemoGift[] = [
-  {
-    id: 1,
-    kind: "money",
-    name: "Voo da lua de mel",
-    description: "Ajuda-nos a chegar aos Açores.",
-    priceCents: 150000,
-    isReserved: false,
-    contributedCents: 62000,
-  },
-  {
-    id: 2,
-    kind: "item",
-    name: "Máquina de café expresso",
-    description: "Para os pequenos-almoços a dois.",
-    priceCents: 18000,
-    isReserved: false,
-    contributedCents: 0,
-  },
-  {
-    id: 3,
-    kind: "item",
-    name: "Jogo de lençóis de linho",
-    description: "Cama de casal, cor natural.",
-    priceCents: 9500,
-    isReserved: true,
-    contributedCents: 0,
-  },
-  {
-    id: 4,
-    kind: "item",
-    name: "Conjunto de panelas",
-    description: "Inox, cinco peças.",
-    priceCents: 22000,
-    isReserved: false,
-    contributedCents: 0,
-  },
-  {
-    id: 5,
-    kind: "money",
-    name: "Presente em dinheiro",
-    description: "Contribui com o valor que quiseres.",
-    priceCents: null,
-    isReserved: false,
-    contributedCents: 34000,
-  },
+  { id: 1, kind: "money", icon: "plane", name: "Voo da lua de mel", description: "Ajuda-nos a chegar aos Açores.", priceCents: 150000, isReserved: false, contributedCents: 62000 },
+  { id: 5, kind: "money", icon: "envelope", name: "Presente em dinheiro", description: "Contribui com o valor que quiseres.", priceCents: null, isReserved: false, contributedCents: 34000 },
+  { id: 2, kind: "item", icon: "coffee", name: "Máquina de café expresso", description: "Para os pequenos-almoços a dois.", priceCents: 18000, isReserved: false, contributedCents: 0, purchaseUrl: "https://www.example.com/maquina-cafe" },
+  { id: 3, kind: "item", icon: "bed", name: "Jogo de lençóis de linho", description: "Cama de casal, cor natural.", priceCents: 9500, isReserved: true, contributedCents: 0 },
+  { id: 4, kind: "item", icon: "pan", name: "Conjunto de panelas", description: "Inox, cinco peças.", priceCents: 22000, isReserved: false, contributedCents: 0, purchaseUrl: "https://www.example.com/panelas" },
+  { id: 6, kind: "item", icon: "vase", name: "Jarra de cerâmica", description: "Feita à mão, em Caldas da Rainha.", priceCents: 4500, isReserved: false, contributedCents: 0 },
+  { id: 7, kind: "item", icon: "glasses", name: "Copos de cristal", description: "Seis copos para os jantares de domingo.", priceCents: 7800, isReserved: false, contributedCents: 0 },
 ];
 
 // Fotos provisórias (public/demo). Substituir pelas fotos verdadeiras do casal.

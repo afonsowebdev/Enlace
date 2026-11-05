@@ -57,7 +57,7 @@ export default function Home() {
           <Reveal className="mt-12 text-center">
             <a
               href="#resposta"
-              className="inline-flex items-center rounded-full bg-vinho px-8 py-3.5 font-medium text-sobre-vinho shadow-[0_12px_30px_-12px_rgba(60,15,20,0.6)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
+              className="inline-flex items-center rounded-full bg-cartao px-8 py-3.5 font-medium text-sobre-cartao shadow-[0_12px_30px_-12px_rgba(60,15,20,0.6)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
             >
               Responder ao convite
             </a>

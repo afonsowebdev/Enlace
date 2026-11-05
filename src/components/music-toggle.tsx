@@ -27,7 +27,7 @@ export function MusicToggle({ src }: { src: string | null }) {
         onClick={toggle}
         aria-pressed={playing}
         aria-label={playing ? "Pausar a música" : "Tocar a música"}
-        className="fixed right-5 bottom-5 z-40 grid size-12 place-items-center rounded-full bg-vinho text-sobre-vinho shadow-[0_10px_25px_-8px_rgba(60,15,20,0.55)] transition-transform hover:scale-105"
+        className="fixed right-5 bottom-5 z-40 grid size-12 place-items-center rounded-full bg-cartao text-sobre-cartao shadow-[0_10px_25px_-8px_rgba(60,15,20,0.55)] transition-transform hover:scale-105"
       >
         <svg viewBox="0 0 24 24" className={`size-5 ${playing ? "animate-[spin_6s_linear_infinite]" : ""}`} aria-hidden="true">
           <path

@@ -46,7 +46,7 @@ export function Venue({ places, timeZone }: { places: Place[]; timeZone: string 
               aria-selected={i === index}
               onClick={() => setIndex(i)}
               className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-                i === index ? "bg-vinho text-sobre-vinho" : "bg-transparent text-pedra hover:text-tinta"
+                i === index ? "bg-cartao text-sobre-cartao" : "bg-transparent text-pedra hover:text-tinta"
               }`}
             >
               {p.label}

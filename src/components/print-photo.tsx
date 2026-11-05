@@ -30,7 +30,7 @@ export function PrintPhoto({
   trigger = "scroll",
   priority = false,
   className = "",
-  sizes = "(min-width: 640px) 40rem, 92vw",
+  sizes = "(min-width: 640px) 30rem, 80vw",
 }: PrintPhotoProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });

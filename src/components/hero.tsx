@@ -70,7 +70,7 @@ export function Hero({
           caption={`${partnerOneName} & ${partnerTwoName}`}
           trigger="load"
           priority
-          className="-mr-1 sm:-mr-6"
+          className="mx-auto w-[82%] sm:w-[78%]"
         />
 
         <motion.div

@@ -11,6 +11,9 @@
   --rubor: #f1dcdc;
   --dourado: #b08a4f;
   --sobre-vinho: #f7f0e7;
+  /* cartão-convite: vinho escuro com texto creme, igual nos dois modos */
+  --cartao: #6b1c26;
+  --sobre-cartao: #f7f0e7;
   color-scheme: light;
 }
 
@@ -25,6 +28,8 @@
     --rubor: #331820;
     --dourado: #d2ad6e;
     --sobre-vinho: #1d0d11;
+    --cartao: #561620;
+    --sobre-cartao: #f7f0e7;
     color-scheme: dark;
   }
 }
@@ -39,6 +44,8 @@
   --rubor: #331820;
   --dourado: #d2ad6e;
   --sobre-vinho: #1d0d11;
+  --cartao: #561620;
+  --sobre-cartao: #f7f0e7;
   color-scheme: dark;
 }
 
@@ -52,6 +59,8 @@
   --color-rubor: var(--rubor);
   --color-dourado: var(--dourado);
   --color-sobre-vinho: var(--sobre-vinho);
+  --color-cartao: var(--cartao);
+  --color-sobre-cartao: var(--sobre-cartao);
 
   --font-display: var(--font-lamoric);
   --font-sans: var(--font-poppins);

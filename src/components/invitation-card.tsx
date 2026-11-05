@@ -35,7 +35,7 @@ export function InvitationCard({ partnerOneName, partnerTwoName, parents, events
   return (
     <div className="relative">
       <motion.div
-        className="relative overflow-hidden rounded-2xl bg-vinho px-6 py-12 text-center text-sobre-vinho shadow-[0_30px_60px_-30px_rgba(60,15,20,0.7)] sm:px-10"
+        className="relative overflow-hidden rounded-2xl bg-cartao px-6 py-12 text-center text-sobre-cartao shadow-[0_30px_60px_-30px_rgba(60,15,20,0.7)] sm:px-10"
         initial={{ opacity: 0, y: 40, rotate: -1.5 }}
         whileInView={{ opacity: 1, y: 0, rotate: 0 }}
         viewport={{ once: true, amount: 0.15 }}
@@ -103,7 +103,7 @@ export function InvitationCard({ partnerOneName, partnerTwoName, parents, events
       </motion.div>
 
       {/* raminho a sair pela margem do cartão */}
-      <div aria-hidden="true" className="pointer-events-none absolute -top-16 -right-12 w-36 rotate-[24deg] text-dourado opacity-90 sm:-top-20 sm:-right-20 sm:w-52">
+      <div aria-hidden="true" className="pointer-events-none absolute -top-14 -right-8 w-28 rotate-[30deg] text-dourado opacity-80 sm:-top-20 sm:-right-20 sm:w-44">
         <Sprig variant={0} blossomColor="var(--rubor)" />
       </div>
     </div>
