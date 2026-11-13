@@ -84,6 +84,31 @@ describe("dados do casamento", () => {
     });
   });
 
+  it("os noivos guardam um versículo; todos o leem", async () => {
+    const id = await createWedding(NOIVA);
+    await asUser(db, NOIVA, (tx) =>
+      tx.query(`update weddings set verse_text = 'Que ninguém separe o que Deus uniu.', verse_reference = 'Mateus 19:6' where id = $1`, [id]),
+    );
+    const r = await asAnon(db, (tx) => tx.query(`select verse_text, verse_reference from weddings where id = $1`, [id]));
+    expect(r.rows[0]).toEqual({ verse_text: "Que ninguém separe o que Deus uniu.", verse_reference: "Mateus 19:6" });
+  });
+
+  it("o versículo não aceita referência sem texto nem texto vazio", async () => {
+    const id = await createWedding(NOIVA);
+    await expect(
+      asUser(db, NOIVA, (tx) => tx.query(`update weddings set verse_reference = 'Mateus 19:6' where id = $1`, [id])),
+    ).rejects.toThrow(/weddings_verse_reference_needs_text/);
+    await expect(
+      asUser(db, NOIVA, (tx) => tx.query(`update weddings set verse_text = '   ' where id = $1`, [id])),
+    ).rejects.toThrow(/verse_text_check/);
+  });
+
+  it("outra conta não altera o versículo", async () => {
+    const id = await createWedding(NOIVA);
+    const r = await asUser(db, ESTRANHO, (tx) => tx.query(`update weddings set verse_text = 'X' where id = $1`, [id]));
+    expect(r.affectedRows).toBe(0);
+  });
+
   it("a receção tem as duas coordenadas ou nenhuma", async () => {
     const id = await createWedding(NOIVA);
     await expect(

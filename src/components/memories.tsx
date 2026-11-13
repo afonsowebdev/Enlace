@@ -50,7 +50,7 @@ export function Memories({ supabase, weddingId, guestId }: MemoriesProps) {
 
   if (guestId === null) {
     return (
-      <p className="rounded-md bg-linho px-4 py-3 text-sm">
+      <p className="mx-auto max-w-xl rounded-xl bg-linho px-5 py-3 text-center text-sm">
         Para enviar e ver as memórias do casamento, <a href="#resposta" className={buttonLink}>responde primeiro ao convite</a>.
       </p>
     );
@@ -93,7 +93,7 @@ export function Memories({ supabase, weddingId, guestId }: MemoriesProps) {
   }
 
   return (
-    <div>
+    <div className="text-center">
       <input
         ref={inputRef}
         type="file"
@@ -112,7 +112,7 @@ export function Memories({ supabase, weddingId, guestId }: MemoriesProps) {
       <p className="mt-3 text-sm text-pedra">Até 50 MB por ficheiro. Só os noivos podem descarregar as memórias.</p>
 
       {problems.length > 0 && (
-        <ul role="alert" className="mt-4 space-y-1 text-sm">
+        <ul role="alert" className="mx-auto mt-4 max-w-xl space-y-1 text-sm">
           {problems.map((p) => (
             <li key={p}>{p} Experimenta uma versão mais pequena.</li>
           ))}
@@ -120,11 +120,11 @@ export function Memories({ supabase, weddingId, guestId }: MemoriesProps) {
       )}
 
       {memories.length === 0 ? (
-        <p className="mt-10 max-w-[48ch] text-pedra">
+        <p className="mx-auto mt-10 max-w-[48ch] text-pedra">
           Ainda não há memórias. As fotos e vídeos que os convidados enviarem aparecem aqui, para todos verem.
         </p>
       ) : (
-        <ul className="mt-8 grid grid-cols-3 gap-1.5 sm:gap-2" aria-label="Galeria de memórias">
+        <ul className="mt-8 grid grid-cols-3 gap-1.5 sm:grid-cols-4 sm:gap-2 lg:grid-cols-6" aria-label="Galeria de memórias">
           {memories.map((m) => (
             <li key={m.id} className="relative aspect-square overflow-hidden rounded-sm bg-linho">
               {m.kind === "photo" ? (

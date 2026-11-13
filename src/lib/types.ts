@@ -24,9 +24,15 @@ export type Gift = {
   purchaseUrl: string | null;
   priceCents: number | null;
   isReserved: boolean;
-  contributedCents: number;
   sortOrder: number;
 };
+
+/**
+ * Colunas de gifts legíveis pela API. O total já oferecido (contributed_cents)
+ * fica escondido de todos (migração 20261109000000); por isso nunca `select("*")`.
+ */
+export const GIFT_COLUMNS =
+  "id, wedding_id, kind, icon, name, description, image_url, purchase_url, price_cents, sort_order, is_reserved";
 
 export type StoryMoment = {
   id: number;
@@ -61,6 +67,8 @@ export type WeddingRow = {
   venue_latitude: number | null;
   venue_longitude: number | null;
   welcome_message: string | null;
+  verse_text: string | null;
+  verse_reference: string | null;
   rsvp_deadline: string | null;
   max_companions: number;
   partner_one_parents: string[];
@@ -86,7 +94,6 @@ export type GiftRow = {
   price_cents: number | null;
   sort_order: number;
   is_reserved: boolean;
-  contributed_cents: number;
 };
 
 export type StoryRow = {
@@ -110,7 +117,6 @@ export function toGift(r: GiftRow): Gift {
     purchaseUrl: r.purchase_url,
     priceCents: r.price_cents,
     isReserved: r.is_reserved,
-    contributedCents: Number(r.contributed_cents),
     sortOrder: r.sort_order,
   };
 }

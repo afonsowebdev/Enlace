@@ -14,10 +14,16 @@ type Payment = { holder_name: string; iban: string | null; mbway_phone: string |
 
 type Props = { wedding: WeddingRow; payment: Payment; coverUrl: string | null; musicUrl: string | null };
 
-async function geocode(address: string) {
-  const r = await fetch(`/api/geocode?q=${encodeURIComponent(address)}`).catch(() => null);
+async function lookup(q: string) {
+  if (!q.trim()) return null;
+  const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`).catch(() => null);
   if (!r?.ok) return null;
   return (await r.json()) as { latitude: number; longitude: number };
+}
+
+/** Procura a morada; se o mapa não a conhecer, tenta pelo nome do local (ex.: "Restaurante o Sobreiro, Rio Caldo"). */
+async function geocode(address: string, placeName: string) {
+  return (await lookup(address)) ?? (await lookup(placeName));
 }
 
 export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) {
@@ -41,6 +47,8 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
     parentsOne: w.partner_one_parents.join("\n"),
     parentsTwo: w.partner_two_parents.join("\n"),
     welcome: w.welcome_message ?? "",
+    verse: w.verse_text ?? "",
+    verseReference: w.verse_reference ?? "",
     deadline: w.rsvp_deadline ?? "",
     maxCompanions: String(w.max_companions),
     holder: payment?.holder_name ?? "",
@@ -66,13 +74,13 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
     // Coordenadas: procuradas de novo quando a morada muda.
     let venueCoords = { venue_latitude: w.venue_latitude, venue_longitude: w.venue_longitude };
     if (f.venueAddress.trim() !== w.venue_address || w.venue_latitude === null) {
-      const g = await geocode(f.venueAddress);
+      const g = await geocode(f.venueAddress, f.venueName);
       venueCoords = { venue_latitude: g?.latitude ?? null, venue_longitude: g?.longitude ?? null };
       if (!g) notes.push("Não encontrámos a morada da cerimónia no mapa; o convite mostra só o caminho.");
     }
     let receptionCoords = { reception_latitude: w.reception_latitude, reception_longitude: w.reception_longitude };
     if (f.hasReception && (f.receptionAddress.trim() !== (w.reception_address ?? "") || w.reception_latitude === null)) {
-      const g = await geocode(f.receptionAddress);
+      const g = await geocode(f.receptionAddress, f.receptionName);
       receptionCoords = { reception_latitude: g?.latitude ?? null, reception_longitude: g?.longitude ?? null };
       if (!g) notes.push("Não encontrámos a morada da receção no mapa.");
     }
@@ -121,6 +129,8 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
         partner_one_parents: splitNames(f.parentsOne),
         partner_two_parents: splitNames(f.parentsTwo),
         welcome_message: f.welcome.trim() || null,
+        verse_text: f.verse.trim() || null,
+        verse_reference: f.verse.trim() ? f.verseReference.trim() || null : null,
         rsvp_deadline: f.deadline || null,
         max_companions: Math.max(0, Math.min(20, Number(f.maxCompanions) || 0)),
         cover_photo_path: coverPath,
@@ -227,6 +237,14 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
               <textarea id="welcome" rows={3} maxLength={2000} className={input} value={f.welcome} onChange={set("welcome")} />
             </Field>
           </div>
+          <div className="sm:col-span-2">
+            <Field label="Versículo" id="verse" hint="Opcional. Aparece no cartão do convite, por baixo dos nomes.">
+              <textarea id="verse" rows={4} maxLength={1000} className={input} value={f.verse} onChange={set("verse")} />
+            </Field>
+          </div>
+          <Field label="Referência do versículo" id="verseReference" hint="Ex.: Mateus 19:5-6.">
+            <input id="verseReference" className={input} maxLength={80} value={f.verseReference} onChange={set("verseReference")} />
+          </Field>
           <Field label="Responder até" id="deadline" hint="Opcional.">
             <input id="deadline" type="date" className={input} value={f.deadline} onChange={set("deadline")} />
           </Field>

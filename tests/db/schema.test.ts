@@ -267,16 +267,28 @@ describe("presentes em dinheiro", () => {
     );
   }
 
-  it("vários convidados contribuem para o mesmo presente e a lista mostra o total", async () => {
+  it("vários convidados contribuem para o mesmo presente e a base de dados soma o total", async () => {
     const ana = await registerGuest(ANA, "Ana Silva");
     const rui = await registerGuest(RUI, "Rui Costa");
     await contribute(ANA, ana, 5000);
     await contribute(RUI, rui, 7500);
     await contribute(ANA, ana, 2500);
-    const r = await asAnon(db, (tx) =>
-      tx.query(`select contributed_cents from gifts where id = $1`, [moneyGiftId]),
-    );
+    const r = await db.query(`select contributed_cents from gifts where id = $1`, [moneyGiftId]);
     expect(r.rows[0]).toEqual({ contributed_cents: 15000 });
+  });
+
+  it("ninguém lê pela API quanto já foi oferecido; a lista continua pública", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await contribute(ANA, ana, 5000);
+    const total = `select contributed_cents from gifts where id = ${moneyGiftId}`;
+    await expect(asAnon(db, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asUser(db, ANA, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asUser(db, NOIVO, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asAnon(db, (tx) => tx.query(`select * from gifts`))).rejects.toThrow(/permission denied/);
+    const list = await asAnon(db, (tx) =>
+      tx.query(`select name, kind, price_cents, is_reserved from gifts where id = $1`, [moneyGiftId]),
+    );
+    expect(list.rows).toEqual([{ name: "Voo da lua de mel", kind: "money", price_cents: 150000, is_reserved: false }]);
   });
 
   it("cada convidado vê só as suas contribuições; os noivos veem todas", async () => {

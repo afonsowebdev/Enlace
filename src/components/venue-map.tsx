@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, ZoomControl } from "react-leaflet";
 
 // Pino desenhado em CSS: um nó vinho, como os do fio.
 const pin = L.divIcon({
@@ -20,6 +20,7 @@ export default function VenueMap({ latitude, longitude, label }: VenueMapProps) 
       center={[latitude, longitude]}
       zoom={15}
       scrollWheelZoom={false}
+      zoomControl={false}
       className="h-full w-full"
       attributionControl
     >
@@ -27,6 +28,7 @@ export default function VenueMap({ latitude, longitude, label }: VenueMapProps) 
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <ZoomControl position="bottomright" />
       <Marker position={[latitude, longitude]} icon={pin} title={label} alt={label} />
     </MapContainer>
   );

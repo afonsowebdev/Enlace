@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { formatEuros, formatIban, formatPhone } from "@/lib/format";
-import { toGift, type Gift, type GiftRow, type PaymentDetails } from "@/lib/types";
+import { GIFT_COLUMNS, toGift, type Gift, type GiftRow, type PaymentDetails } from "@/lib/types";
 import { GiftIcon } from "./gift-icon";
 import { buttonLink, buttonPrimary, field, goToRsvp } from "./ui";
 import { friendlyError } from "./use-guest";
@@ -46,7 +46,7 @@ export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps
   const refreshGifts = useCallback(async () => {
     const { data } = await supabase
       .from("gifts")
-      .select("*")
+      .select(GIFT_COLUMNS)
       .eq("wedding_id", weddingId)
       .order("sort_order")
       .order("id")
@@ -124,13 +124,12 @@ export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps
   }
 
   if (gifts.length === 0) {
-    return <p className="text-pedra">Os noivos ainda não adicionaram presentes. Volta mais tarde.</p>;
+    return <p className="text-center text-pedra">Os noivos ainda não adicionaram presentes. Volta mais tarde.</p>;
   }
 
   const money = gifts.filter((g) => g.kind === "money");
   const items = gifts.filter((g) => g.kind === "item");
   const available = items.filter((g) => !g.isReserved);
-  const raised = money.reduce((sum, g) => sum + g.contributedCents, 0);
 
   // Disponíveis primeiro, depois os meus, por fim os já reservados por outros.
   const rank = (g: Gift) => (!g.isReserved ? 0 : mine.has(g.id) ? 1 : 2);
@@ -149,23 +148,17 @@ export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps
 
   return (
     <div>
-      <p className="text-pedra">
-        Ainda há <strong className="font-medium text-tinta">{available.length} {available.length === 1 ? "artigo disponível" : "artigos disponíveis"}</strong>
-        {raised > 0 && (
-          <>
-            {" "}e já foram oferecidos <strong className="font-medium text-tinta">{formatEuros(raised)}</strong> em dinheiro
-          </>
-        )}
-        .
+      <p className="text-center text-pedra">
+        Ainda há <strong className="font-medium text-tinta">{available.length} {available.length === 1 ? "artigo disponível" : "artigos disponíveis"}</strong>.
       </p>
 
       {!registered && (
-        <p className="mt-6 rounded-md bg-linho px-4 py-3 text-sm">
+        <p className="mx-auto mt-6 max-w-xl rounded-xl bg-linho px-5 py-3 text-center text-sm">
           Para reservar um presente ou contribuir, <a href="#resposta" className={buttonLink}>responde primeiro ao convite</a>.
         </p>
       )}
 
-      <div role="group" aria-label="Filtrar presentes" className="-mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div role="group" aria-label="Filtrar presentes" className="-mx-1 mt-6 flex gap-2 overflow-x-auto px-1 pb-1 sm:justify-center">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -182,7 +175,7 @@ export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps
       </div>
 
       {showMoney && money.length > 0 && (
-        <div className="mt-8 space-y-5">
+        <div className="mt-8 grid gap-5 lg:grid-cols-2">
           {money.map((gift) => (
             <MoneyCard
               key={gift.id}
@@ -198,7 +191,7 @@ export function Gifts({ supabase, weddingId, initialGifts, guestId }: GiftsProps
       )}
 
       {showItems && (
-        <motion.ul layout className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+        <motion.ul layout className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
           <AnimatePresence initial={false}>
             {shownItems.map((gift) => (
               <motion.li
@@ -334,10 +327,7 @@ function MoneyCard({
   payment: PaymentDetails | null;
   onContribute: (cents: number, method: "bank_transfer" | "mbway") => Promise<string | null>;
 }) {
-  const goal = gift.priceCents;
-  const reached = goal !== null && gift.contributedCents >= goal;
-  const pct = goal ? Math.min(100, Math.round((gift.contributedCents / goal) * 100)) : null;
-
+  // Os convidados não veem quanto já foi oferecido (só o que eles próprios deram).
   return (
     <div>
       <div className="relative overflow-hidden rounded-2xl bg-cartao p-5 text-sobre-cartao sm:p-6">
@@ -351,31 +341,13 @@ function MoneyCard({
         </div>
 
         <div className="relative mt-5">
-          {pct !== null && (
-            <div
-              role="progressbar"
-              aria-label={`Angariado para ${gift.name}`}
-              aria-valuemin={0}
-              aria-valuemax={goal ?? 0}
-              aria-valuenow={Math.min(gift.contributedCents, goal ?? 0)}
-              className="h-[3px] w-full rounded-full bg-sobre-cartao/20"
-            >
-              <motion.div
-                className="h-full rounded-full bg-dourado"
-                initial={{ width: 0 }}
-                whileInView={{ width: `${pct}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </div>
-          )}
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <p className="text-sm tabular-nums">
-              <span className="font-display text-2xl">{formatEuros(gift.contributedCents)}</span>
-              <span className="opacity-80">
-                {goal !== null ? (reached ? ", objetivo atingido" : ` de ${formatEuros(goal)}`) : " oferecidos"}
-              </span>
-              {myTotal > 0 && <span className="block text-xs text-dourado">Incluindo os teus {formatEuros(myTotal)}</span>}
+              {myTotal > 0 ? (
+                <span className="text-dourado">Já contribuíste com {formatEuros(myTotal)}. Obrigado!</span>
+              ) : (
+                <span className="opacity-85">Contribui com o valor que quiseres.</span>
+              )}
             </p>
             <button
               type="button"

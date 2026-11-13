@@ -1,7 +1,7 @@
 import "server-only";
 import { mediaUrl, supabaseConfig, weddingSlug } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { toGift, type Gift, type GiftRow, type StoryMoment, type StoryRow, type WeddingRow } from "@/lib/types";
+import { GIFT_COLUMNS, toGift, type Gift, type GiftRow, type StoryMoment, type StoryRow, type WeddingRow } from "@/lib/types";
 
 export type InvitationData = { wedding: WeddingRow; gifts: Gift[]; story: StoryMoment[] };
 
@@ -23,7 +23,7 @@ export async function loadInvitation(): Promise<InvitationResult> {
   if (!wedding) return { status: "empty" };
 
   const [gifts, story] = await Promise.all([
-    supabase.from("gifts").select("*").eq("wedding_id", wedding.id).order("sort_order").order("id").returns<GiftRow[]>(),
+    supabase.from("gifts").select(GIFT_COLUMNS).eq("wedding_id", wedding.id).order("sort_order").order("id").returns<GiftRow[]>(),
     supabase.from("story_moments").select("*").eq("wedding_id", wedding.id).order("sort_order").order("id").returns<StoryRow[]>(),
   ]);
 

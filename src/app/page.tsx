@@ -4,7 +4,7 @@ import { Invitation } from "@/components/invitation";
 import { InvitationCard } from "@/components/invitation-card";
 import { MusicToggle } from "@/components/music-toggle";
 import { NoticePage } from "@/components/notice-page";
-import { Reveal } from "@/components/reveal";
+import { Ornament } from "@/components/ornament";
 import { mediaUrl } from "@/lib/env";
 import { loadInvitation } from "@/lib/invitation";
 import { placesOf } from "@/lib/types";
@@ -61,53 +61,48 @@ export default async function Home() {
       <MusicToggle src={mediaUrl(w.music_path)} />
       <Backdrop />
 
-      <main className="relative mx-auto w-full max-w-[38rem] px-5 pb-24 sm:px-6">
+      <main className="relative w-full overflow-x-clip">
         <Hero
           partnerOneName={w.partner_one_name}
           partnerTwoName={w.partner_two_name}
           startsAt={w.starts_at}
           timeZone={w.time_zone}
           venueName={w.venue_name}
-          welcomeMessage={w.welcome_message}
           coverPhoto={cover ? { src: cover, alt: `${w.partner_one_name} e ${w.partner_two_name}` } : null}
         />
 
-        <div className="border-l-[1.5px] border-vinho pt-10 pb-24 pl-7">
-          <InvitationCard
-            partnerOneName={w.partner_one_name}
-            partnerTwoName={w.partner_two_name}
-            parents={{ partnerOne: w.partner_one_parents, partnerTwo: w.partner_two_parents }}
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+          <section id="convite" aria-label="Convite" className="scroll-mt-10 pt-10 pb-8">
+            <InvitationCard
+              partnerOneName={w.partner_one_name}
+              partnerTwoName={w.partner_two_name}
+              parents={{ partnerOne: w.partner_one_parents, partnerTwo: w.partner_two_parents }}
+              timeZone={w.time_zone}
+              welcomeMessage={w.welcome_message}
+              verse={w.verse_text ? { text: w.verse_text, reference: w.verse_reference } : null}
+              events={places.map((p) => ({ label: p.label, place: p.name, startsAt: p.startsAt }))}
+            />
+          </section>
+
+          <Invitation
+            weddingId={w.id}
+            coupleNames={`${w.partner_one_name} & ${w.partner_two_name}`}
             timeZone={w.time_zone}
-            events={places.map((p) => ({ label: p.label, place: p.name, startsAt: p.startsAt }))}
+            rsvpDeadline={w.rsvp_deadline}
+            maxCompanions={w.max_companions}
+            places={places}
+            story={story}
+            gifts={gifts}
           />
 
-          {/* Depois de ler o convite, o convidado responde. */}
-          <Reveal className="mt-12 text-center">
-            <a
-              href="#resposta"
-              className="inline-flex items-center rounded-full bg-cartao px-8 py-3.5 font-medium text-sobre-cartao shadow-[0_12px_30px_-12px_rgba(60,15,20,0.6)] transition-transform hover:-translate-y-0.5 active:translate-y-0"
-            >
-              Responder ao convite
-            </a>
-          </Reveal>
+          <footer className="pt-8 pb-28 text-center">
+            <Ornament className="text-dourado" />
+            <p className="mt-8 font-display text-[clamp(2rem,6vw,3rem)] leading-tight">
+              {w.partner_one_name} <span className="brilho inline-block">&amp;</span> {w.partner_two_name}
+            </p>
+            <p className="mt-2 text-sm tracking-[0.2em] text-pedra uppercase">Com amor, à tua espera</p>
+          </footer>
         </div>
-
-        <Invitation
-          weddingId={w.id}
-          timeZone={w.time_zone}
-          rsvpDeadline={w.rsvp_deadline}
-          maxCompanions={w.max_companions}
-          places={places}
-          story={story}
-          gifts={gifts}
-        />
-
-        <footer className="mt-20 pl-7">
-          <p className="font-display text-2xl">
-            {w.partner_one_name} &amp; {w.partner_two_name}
-          </p>
-          <p className="mt-1 text-sm text-pedra">Com amor, à tua espera.</p>
-        </footer>
       </main>
     </>
   );

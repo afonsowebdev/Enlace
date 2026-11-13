@@ -1,11 +1,11 @@
 import { GiftsEditor, type ContributionView, type ReservationView } from "@/components/painel/gifts-editor";
 import { requireHostWedding } from "@/lib/host";
-import type { GiftRow } from "@/lib/types";
+import { GIFT_COLUMNS, type GiftRow } from "@/lib/types";
 
 export default async function PresentesPage() {
   const { supabase, wedding } = await requireHostWedding();
   const [gifts, reservations, contributions] = await Promise.all([
-    supabase.from("gifts").select("*").eq("wedding_id", wedding.id).order("sort_order").order("id").returns<GiftRow[]>(),
+    supabase.from("gifts").select(GIFT_COLUMNS).eq("wedding_id", wedding.id).order("sort_order").order("id").returns<GiftRow[]>(),
     supabase.from("gift_reservations").select("id, gift_id, created_at, guests(full_name)").eq("wedding_id", wedding.id),
     supabase
       .from("gift_contributions")

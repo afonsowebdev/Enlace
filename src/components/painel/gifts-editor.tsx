@@ -41,6 +41,9 @@ export function GiftsEditor({
   const supabase = useMemo(() => createClient(), []);
   const reservedBy = new Map(reservations.map((r) => [r.gift_id, r]));
   const giftName = new Map(gifts.map((g) => [g.id, g.name]));
+  // Só os noivos veem todas as contribuições (RLS); o total sai daqui.
+  const contributedBy = new Map<number, number>();
+  for (const c of contributions) contributedBy.set(c.gift_id, (contributedBy.get(c.gift_id) ?? 0) + c.amount_cents);
 
   async function toggleReceived(c: ContributionView) {
     await supabase
@@ -61,7 +64,13 @@ export function GiftsEditor({
       <div className="space-y-4">
         {gifts.length === 0 && <p className="text-pedra">Ainda não há presentes. Acrescentem o primeiro em baixo.</p>}
         {gifts.map((g) => (
-          <GiftForm key={g.id} weddingId={weddingId} gift={g} reservation={reservedBy.get(g.id)} />
+          <GiftForm
+            key={g.id}
+            weddingId={weddingId}
+            gift={g}
+            reservation={reservedBy.get(g.id)}
+            contributedCents={contributedBy.get(g.id) ?? 0}
+          />
         ))}
         <GiftForm key={`novo-${gifts.length}`} weddingId={weddingId} nextOrder={gifts.length} />
       </div>
@@ -119,11 +128,13 @@ function GiftForm({
   weddingId,
   gift,
   reservation,
+  contributedCents = 0,
   nextOrder = 0,
 }: {
   weddingId: number;
   gift?: GiftRow;
   reservation?: ReservationView;
+  contributedCents?: number;
   nextOrder?: number;
 }) {
   const router = useRouter();
@@ -179,7 +190,7 @@ function GiftForm({
 
   async function remove() {
     if (!gift) return;
-    const warn = reservation || gift.contributed_cents > 0 ? " Já tem reservas ou contribuições, que também serão apagadas." : "";
+    const warn = reservation || contributedCents > 0 ? " Já tem reservas ou contribuições, que também serão apagadas." : "";
     if (!confirm(`Apagar "${gift.name}"?${warn}`)) return;
     await supabase.from("gifts").delete().eq("id", gift.id);
     router.refresh();
@@ -206,7 +217,7 @@ function GiftForm({
           <p className="font-medium">{gift.name}</p>
           <p className="text-sm text-pedra">
             {gift.kind === "money"
-              ? `Em dinheiro: ${formatEuros(Number(gift.contributed_cents))} oferecidos${gift.price_cents ? ` de ${formatEuros(gift.price_cents)}` : ""}`
+              ? `Em dinheiro: ${formatEuros(contributedCents)} oferecidos${gift.price_cents ? ` de ${formatEuros(gift.price_cents)}` : ""}`
               : `${gift.price_cents != null ? formatEuros(gift.price_cents) : "Sem valor"}. ${
                   reservation ? `Reservado por ${reservation.guests?.full_name ?? "um convidado"}` : "Disponível"
                 }`}

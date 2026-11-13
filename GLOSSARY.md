@@ -30,6 +30,10 @@ _Avoid_: Site, landing page, cartão
 O sítio onde decorre o casamento, identificado por nome e morada e mostrado num mapa.
 _Avoid_: Venue, endereço (quando se fala do sítio todo), localização
 
+**Versículo**:
+Texto bíblico opcional que os noivos mostram no cartão do convite, com a sua referência (ex.: Mateus 19:5-6).
+_Avoid_: Citação, frase, passagem
+
 ## Resposta ao convite
 
 **Resposta**:
