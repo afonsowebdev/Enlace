@@ -18,6 +18,8 @@
   --convite: #f6eddc;
   --convite-luz: #fdf9f1;
   --sobre-convite: #3b1a1f;
+  /* brilho do fundo, no topo da página; desligado no modo escuro */
+  --halo: #fdf9f1;
   --petala: #e9c9c3;
   color-scheme: light;
 }
@@ -39,6 +41,7 @@
     --convite-luz: #f8f0e2;
     --sobre-convite: #3b1a1f;
     --petala: #6e3a44;
+    --halo: transparent;
     color-scheme: dark;
   }
 }
@@ -59,6 +62,7 @@
   --convite-luz: #f8f0e2;
   --sobre-convite: #3b1a1f;
   --petala: #6e3a44;
+  --halo: transparent;
   color-scheme: dark;
 }
 
