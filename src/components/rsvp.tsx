@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
+import type { Child } from "@/lib/types";
 import { Bloom, Sprig } from "./backdrop";
 import { Paper } from "./paper";
 import { buttonLink } from "./ui";
@@ -9,12 +10,15 @@ import { buttonLink } from "./ui";
 export type GuestResponse = {
   name: string;
   attending: boolean;
-  companions: number;
+  /** Nome da esposa ou do esposo, quando vem em casal. */
+  partnerName: string | null;
+  children: Child[];
   message: string;
 };
 
 type RsvpProps = {
-  maxCompanions: number;
+  /** Idade máxima das crianças; null = não são aceites crianças. */
+  maxChildAge: number | null;
   deadline: string | null;
   response: GuestResponse | null;
   /** Grava a resposta; devolve uma mensagem de erro ou null. */
@@ -27,13 +31,18 @@ const eyebrow = "text-[0.7rem] font-medium tracking-[0.32em] text-dourado upperc
 
 /**
  * O cartão de resposta, como o que vem dentro de um convite impresso:
- * nome numa linha, duas escolhas grandes, acompanhantes e uma mensagem em papel pautado.
+ * nome numa linha, duas escolhas grandes, se vem em casal, as crianças e uma
+ * mensagem em papel pautado.
  */
-export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps) {
+export function Rsvp({ maxChildAge, deadline, response, onRespond }: RsvpProps) {
   const [editing, setEditing] = useState(response === null);
   const [name, setName] = useState(response?.name ?? "");
   const [attending, setAttending] = useState<boolean | null>(response?.attending ?? null);
-  const [companions, setCompanions] = useState(response?.companions ?? 0);
+  const [asCouple, setAsCouple] = useState<boolean | null>(response ? Boolean(response.partnerName) : null);
+  const [partnerName, setPartnerName] = useState(response?.partnerName ?? "");
+  const [children, setChildren] = useState<ChildDraft[]>(
+    (response?.children ?? []).map((c) => ({ name: c.name, age: String(c.age) })),
+  );
   const [message, setMessage] = useState(response?.message ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +50,21 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
   const deadlineText = deadline
     ? new Intl.DateTimeFormat("pt-PT", { day: "numeric", month: "long" }).format(new Date(`${deadline}T12:00:00Z`))
     : null;
-  const canSend = name.trim().length >= 2 && attending !== null && !saving;
+  const missing =
+    name.trim().length < 2
+      ? "Escreve o teu nome para continuar."
+      : attending === null
+        ? "Escolhe se vens ou não."
+        : !attending
+          ? null
+          : asCouple === null
+            ? "Diz-nos se vens sozinho ou em casal."
+            : asCouple && partnerName.trim().length < 2
+              ? "Escreve o nome da tua esposa ou do teu esposo."
+              : children.some((c) => !c.name.trim() || c.age === "")
+                ? "Indica o nome e a idade de cada criança."
+                : null;
+  const canSend = missing === null && !saving;
 
   return (
     <Paper className="mx-auto w-full max-w-2xl">
@@ -72,7 +95,8 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
                 const problem = await onRespond({
                   name: name.trim(),
                   attending: attending!,
-                  companions: attending ? companions : 0,
+                  partnerName: attending && asCouple ? partnerName.trim() : null,
+                  children: attending ? children.map((c) => ({ name: c.name.trim(), age: Number(c.age) })) : [],
                   message: message.trim(),
                 });
                 setSaving(false);
@@ -131,7 +155,7 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
               </fieldset>
 
               <AnimatePresence initial={false}>
-                {attending && maxCompanions > 0 && (
+                {attending && (
                   <motion.div
                     key="acompanhantes"
                     initial={{ opacity: 0, height: 0 }}
@@ -140,7 +164,13 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
                     transition={{ duration: 0.45, ease }}
                     className="overflow-hidden"
                   >
-                    <Companions value={companions} max={maxCompanions} onChange={setCompanions} />
+                    <Couple
+                      asCouple={asCouple}
+                      onChoose={setAsCouple}
+                      partnerName={partnerName}
+                      onPartnerName={setPartnerName}
+                    />
+                    {maxChildAge !== null && <Children list={children} maxAge={maxChildAge} onChange={setChildren} />}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -185,11 +215,7 @@ export function Rsvp({ maxCompanions, deadline, response, onRespond }: RsvpProps
               >
                 {saving ? "A enviar…" : "Enviar resposta"}
               </button>
-              {!canSend && !saving && (
-                <p className="mt-3 text-xs text-pedra">
-                  {name.trim().length < 2 ? "Escreve o teu nome para continuar." : "Escolhe se vens ou não."}
-                </p>
-              )}
+              {missing && !saving && <p className="mt-3 text-xs text-pedra">{missing}</p>}
               {error && (
                 <p role="alert" className="mt-4 text-sm font-medium text-vinho">
                   {error}
@@ -210,12 +236,14 @@ function Choice({
   title,
   hint,
   icon,
+  group = "rsvp-vem",
 }: {
   selected: boolean;
   onSelect: () => void;
   title: string;
   hint: string;
   icon: React.ReactNode;
+  group?: string;
 }) {
   return (
     <label
@@ -225,7 +253,7 @@ function Choice({
           : "border-dourado/40 bg-papel/50 hover:-translate-y-0.5 hover:border-dourado"
       }`}
     >
-      <input type="radio" name="rsvp-vem" className="sr-only" checked={selected} onChange={onSelect} />
+      <input type="radio" name={group} className="sr-only" checked={selected} onChange={onSelect} />
       <span className={`size-8 transition-colors ${selected ? "text-dourado" : "text-vinho/70 group-hover:text-vinho"}`}>{icon}</span>
       <span className="font-display text-[1.15rem] leading-tight whitespace-nowrap sm:text-[1.45rem]">{title}</span>
       <span className={`text-xs sm:text-sm ${selected ? "text-sobre-cartao/75" : "text-pedra"}`}>{hint}</span>
@@ -246,42 +274,142 @@ function Choice({
   );
 }
 
-/** Quantos vêm com o convidado: botões redondos e uma fila de pessoas. */
-function Companions({ value, max, onChange }: { value: number; max: number; onChange: (n: number) => void }) {
-  const round =
-    "grid size-12 place-items-center rounded-full border border-dourado/60 text-2xl leading-none text-vinho transition-colors hover:border-vinho hover:bg-papel/70 disabled:border-dourado/20 disabled:text-dourado/30 disabled:hover:bg-transparent";
+type ChildDraft = { name: string; age: string };
+
+const lineInput =
+  "w-full border-0 border-b border-dourado/60 bg-transparent px-2 pt-2 pb-2 text-center text-lg text-tinta transition-colors placeholder:text-pedra/50 focus:border-vinho focus:outline-none";
+
+/** Sozinho ou em casal; em casal, o nome da esposa ou do esposo. */
+function Couple({
+  asCouple,
+  onChoose,
+  partnerName,
+  onPartnerName,
+}: {
+  asCouple: boolean | null;
+  onChoose: (v: boolean) => void;
+  partnerName: string;
+  onPartnerName: (v: string) => void;
+}) {
   return (
     <div className="pt-10">
-      <p id="rsvp-acomp" className={eyebrow}>
-        Quem vem contigo?
-      </p>
-      <p className="mt-2 text-sm text-pedra">
-        Podes trazer até {max} {max === 1 ? "acompanhante" : "acompanhantes"}.
-      </p>
-      <div className="mt-5 flex items-center justify-center gap-6" role="group" aria-labelledby="rsvp-acomp">
-        <button type="button" className={round} onClick={() => onChange(Math.max(0, value - 1))} disabled={value === 0} aria-label="Menos uma pessoa">
-          −
-        </button>
-        <output aria-live="polite" className="w-14 font-display text-[2.6rem] leading-none text-vinho tabular-nums">
-          {value}
-        </output>
-        <button type="button" className={round} onClick={() => onChange(Math.min(max, value + 1))} disabled={value === max} aria-label="Mais uma pessoa">
-          +
-        </button>
-      </div>
-      <div aria-hidden="true" className="mt-5 flex items-end justify-center gap-1.5">
-        {Array.from({ length: max + 1 }, (_, i) => (
-          <span
-            key={i}
-            className={`transition-all duration-300 ${i <= value ? "text-vinho" : "text-dourado/25"} ${i === 0 ? "size-7" : "size-6"}`}
+      <fieldset>
+        <legend className={`mx-auto ${eyebrow}`}>Vens sozinho ou em casal?</legend>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Choice group="rsvp-casal" selected={asCouple === false} onSelect={() => onChoose(false)} title="Sozinho" hint="Só eu" icon={<PersonIcon />} />
+          <Choice group="rsvp-casal" selected={asCouple === true} onSelect={() => onChoose(true)} title="Em casal" hint="Eu e o meu par" icon={<CoupleIcon />} />
+        </div>
+      </fieldset>
+      <AnimatePresence initial={false}>
+        {asCouple && (
+          <motion.div
+            key="conjuge"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease }}
+            className="overflow-hidden"
           >
-            <PersonIcon />
-          </span>
-        ))}
-      </div>
-      <p className="mt-2 text-sm text-pedra">
-        {value === 0 ? "Só tu" : `Tu e mais ${value} — ${value + 1} pessoas`}
+            <div className="pt-8">
+              <label htmlFor="rsvp-conjuge" className={eyebrow}>
+                Nome da esposa ou do esposo
+              </label>
+              <input
+                id="rsvp-conjuge"
+                className={`mt-1 ${lineInput} sm:text-xl`}
+                placeholder="Nome e apelido"
+                value={partnerName}
+                onChange={(e) => onPartnerName(e.target.value)}
+                required
+                minLength={2}
+                maxLength={100}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ageLabel(age: number) {
+  return age === 0 ? "Menos de 1 ano" : age === 1 ? "1 ano" : `${age} anos`;
+}
+
+/** As crianças que vêm, com nome e idade. Só até à idade que os noivos aceitam. */
+function Children({ list, maxAge, onChange }: { list: ChildDraft[]; maxAge: number; onChange: (l: ChildDraft[]) => void }) {
+  const update = (i: number, patch: Partial<ChildDraft>) => onChange(list.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+  return (
+    <div className="pt-10">
+      <p id="rsvp-criancas" className={eyebrow}>
+        Trazes crianças?
       </p>
+      <p className="mx-auto mt-3 max-w-[40ch] text-sm leading-relaxed text-pedra">
+        Só podem vir crianças até aos <span className="font-medium text-tinta">{maxAge} {maxAge === 1 ? "ano" : "anos"}</span>, que ainda
+        precisam do apoio dos pais. Por ser num restaurante, pedimos a compreensão de todos: crianças mais velhas não poderão estar presentes.
+      </p>
+
+      <ul className="mt-5 space-y-4" aria-labelledby="rsvp-criancas">
+        <AnimatePresence initial={false}>
+          {list.map((c, i) => (
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease }}
+              className="flex items-end gap-3"
+            >
+              <label className="sr-only" htmlFor={`crianca-nome-${i}`}>
+                Nome da criança {i + 1}
+              </label>
+              <input
+                id={`crianca-nome-${i}`}
+                className={`${lineInput} text-left`}
+                placeholder="Nome da criança"
+                value={c.name}
+                maxLength={60}
+                onChange={(e) => update(i, { name: e.target.value })}
+              />
+              <label className="sr-only" htmlFor={`crianca-idade-${i}`}>
+                Idade da criança {i + 1}
+              </label>
+              <select
+                id={`crianca-idade-${i}`}
+                className="shrink-0 rounded-full border border-dourado/60 bg-papel/60 px-3 py-2 text-sm text-tinta focus:border-vinho focus:outline-none"
+                value={c.age}
+                onChange={(e) => update(i, { age: e.target.value })}
+              >
+                <option value="">Idade</option>
+                {Array.from({ length: maxAge + 1 }, (_, a) => (
+                  <option key={a} value={a}>
+                    {ageLabel(a)}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => onChange(list.filter((_, j) => j !== i))}
+                aria-label={`Retirar ${c.name.trim() || `criança ${i + 1}`}`}
+                className="grid size-9 shrink-0 place-items-center rounded-full text-xl leading-none text-pedra transition-colors hover:bg-papel/70 hover:text-vinho"
+              >
+                ×
+              </button>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </ul>
+
+      {list.length < 10 && (
+        <button
+          type="button"
+          onClick={() => onChange([...list, { name: "", age: "" }])}
+          className="mt-5 inline-flex items-center gap-2 rounded-full border border-dourado/60 px-5 py-2.5 text-sm font-medium text-vinho transition-colors hover:border-vinho hover:bg-papel/70"
+        >
+          <span aria-hidden="true" className="text-lg leading-none">+</span>
+          {list.length === 0 ? "Acrescentar criança" : "Acrescentar outra criança"}
+        </button>
+      )}
     </div>
   );
 }
@@ -289,7 +417,10 @@ function Companions({ value, max, onChange }: { value: number; max: number; onCh
 /** Depois de responder: agradecimento com uma rosa a abrir e o resumo da resposta. */
 function Thanks({ response, onEdit }: { response: GuestResponse; onEdit: () => void }) {
   const firstName = response.name.split(/\s+/)[0];
-  const total = response.companions + 1;
+  const kids = response.children.length;
+  const total = 1 + (response.partnerName ? 1 : 0) + kids;
+  const kidsText = kids === 0 ? "" : kids === 1 ? `${response.children[0].name}` : `${kids} crianças`;
+  const withWhom = [response.partnerName, kidsText].filter(Boolean).join(" e com ");
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -304,8 +435,8 @@ function Thanks({ response, onEdit }: { response: GuestResponse; onEdit: () => v
       <p className="mt-4 font-display text-[clamp(2.2rem,8vw,3.2rem)] leading-tight text-vinho">Obrigado, {firstName}!</p>
       <p className="mx-auto mt-4 max-w-[36ch] text-[1.05rem] leading-relaxed">
         {response.attending
-          ? total > 1
-            ? `Contamos contigo e com mais ${response.companions} ${response.companions === 1 ? "pessoa" : "pessoas"}. Vai ser um dia inesquecível.`
+          ? withWhom
+            ? `Contamos contigo e com ${withWhom}. Vai ser um dia inesquecível.`
             : "Contamos contigo. Vai ser um dia inesquecível."
           : "Obrigado por avisares. Vamos sentir a tua falta."}
       </p>
@@ -350,11 +481,21 @@ function EnvelopeIcon() {
   );
 }
 
+function CoupleIcon() {
+  return (
+    <svg viewBox="0 0 32 32" className="size-full" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+      <circle cx="11.5" cy="10" r="3.6" />
+      <circle cx="20.5" cy="10" r="3.6" />
+      <path d="M4.5 26c0-4.4 3.1-7.6 7-7.6 2 0 3.6.7 4.5 1.8.9-1.1 2.5-1.8 4.5-1.8 3.9 0 7 3.2 7 7.6" />
+    </svg>
+  );
+}
+
 function PersonIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-full" fill="currentColor">
-      <circle cx="12" cy="7.5" r="4" />
-      <path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z" />
+    <svg viewBox="0 0 32 32" className="size-full" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
+      <circle cx="16" cy="10" r="4" />
+      <path d="M8 26c0-4.6 3.5-7.8 8-7.8s8 3.2 8 7.8" />
     </svg>
   );
 }

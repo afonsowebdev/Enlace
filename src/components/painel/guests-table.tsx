@@ -1,16 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { Child } from "@/lib/types";
 
 export type GuestRow = {
   id: number;
   full_name: string;
   rsvp_status: "pending" | "attending" | "declined";
+  partner_name: string | null;
+  children: Child[];
   companions: number;
   message: string | null;
   responded_at: string | null;
   created_at: string;
 };
+
+const ageText = (a: number) => (a === 0 ? "menos de 1 ano" : a === 1 ? "1 ano" : `${a} anos`);
+const childrenText = (cs: Child[]) => cs.map((c) => `${c.name} (${ageText(c.age)})`).join(", ");
 
 const LABEL = { attending: "Vem", declined: "Não vem", pending: "Sem resposta" } as const;
 
@@ -19,12 +25,14 @@ export function GuestsTable({ guests }: { guests: GuestRow[] }) {
   const shown = useMemo(() => (filter === "all" ? guests : guests.filter((g) => g.rsvp_status === filter)), [guests, filter]);
 
   function exportCsv() {
-    const rows = [["Nome", "Resposta", "Acompanhantes", "Mensagem", "Respondeu em"]];
+    const rows = [["Nome", "Resposta", "Esposa / esposo", "Crianças", "Total de pessoas", "Mensagem", "Respondeu em"]];
     for (const g of guests) {
       rows.push([
         g.full_name,
         LABEL[g.rsvp_status],
-        String(g.companions),
+        g.partner_name ?? "",
+        childrenText(g.children),
+        String(g.rsvp_status === "attending" ? 1 + g.companions : 0),
         g.message ?? "",
         g.responded_at ? new Date(g.responded_at).toLocaleString("pt-PT") : "",
       ]);
@@ -65,12 +73,14 @@ export function GuestsTable({ guests }: { guests: GuestRow[] }) {
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-nevoa">
-        <table className="w-full min-w-[36rem] text-left text-sm">
+        <table className="w-full min-w-[48rem] text-left text-sm">
           <thead className="bg-linho text-pedra">
             <tr>
               <th className="px-4 py-3 font-medium">Nome</th>
               <th className="px-4 py-3 font-medium">Resposta</th>
-              <th className="px-4 py-3 font-medium">Acompanhantes</th>
+              <th className="px-4 py-3 font-medium">Esposa / esposo</th>
+              <th className="px-4 py-3 font-medium">Crianças</th>
+              <th className="px-4 py-3 font-medium">Pessoas</th>
               <th className="px-4 py-3 font-medium">Mensagem</th>
             </tr>
           </thead>
@@ -79,7 +89,9 @@ export function GuestsTable({ guests }: { guests: GuestRow[] }) {
               <tr key={g.id}>
                 <td className="px-4 py-3 font-medium">{g.full_name}</td>
                 <td className="px-4 py-3">{LABEL[g.rsvp_status]}</td>
-                <td className="px-4 py-3 tabular-nums">{g.companions}</td>
+                <td className="px-4 py-3">{g.partner_name}</td>
+                <td className="px-4 py-3">{childrenText(g.children)}</td>
+                <td className="px-4 py-3 tabular-nums">{g.rsvp_status === "attending" ? 1 + g.companions : 0}</td>
                 <td className="max-w-[24rem] px-4 py-3 text-pedra">{g.message}</td>
               </tr>
             ))}

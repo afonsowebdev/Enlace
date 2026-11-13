@@ -55,6 +55,9 @@ export type Place = {
 
 // Linhas da base de dados (snake_case) ---------------------------------
 
+/** Criança que vem com um convidado confirmado. */
+export type Child = { name: string; age: number };
+
 export type WeddingRow = {
   id: number;
   slug: string;
@@ -70,7 +73,8 @@ export type WeddingRow = {
   verse_text: string | null;
   verse_reference: string | null;
   rsvp_deadline: string | null;
-  max_companions: number;
+  /** Idade máxima das crianças aceites; null = não são aceites crianças. */
+  max_child_age: number | null;
   partner_one_parents: string[];
   partner_two_parents: string[];
   reception_name: string | null;

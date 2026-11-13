@@ -89,7 +89,7 @@ export default async function Home() {
             coupleNames={`${w.partner_one_name} & ${w.partner_two_name}`}
             timeZone={w.time_zone}
             rsvpDeadline={w.rsvp_deadline}
-            maxCompanions={w.max_companions}
+            maxChildAge={w.max_child_age}
             places={places}
             story={story}
             gifts={gifts}

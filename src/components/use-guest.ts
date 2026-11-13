@@ -3,22 +3,29 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import type { Child } from "@/lib/types";
 
 export type Guest = {
   id: number;
   full_name: string;
   rsvp_status: "pending" | "attending" | "declined";
-  companions: number;
+  partner_name: string | null;
+  children: Child[];
   message: string | null;
 };
 
-export type GuestAnswer = { name: string; attending: boolean; companions: number; message: string };
+const GUEST_COLUMNS = "id, full_name, rsvp_status, partner_name, children, message";
+
+export type GuestAnswer = { name: string; attending: boolean; partnerName: string | null; children: Child[]; message: string };
 
 /** Mensagens claras para os erros que o convidado pode encontrar. */
 export function friendlyError(error: { message?: string; code?: string } | null): string {
   const m = error?.message ?? "";
   if (/anonymous sign-ins are disabled/i.test(m)) return "Os noivos ainda não ativaram as respostas. Tenta mais tarde.";
-  if (/companions_exceed_limit/.test(m)) return "Escolheste mais acompanhantes do que os noivos permitem.";
+  const age = m.match(/child_too_old: .*?(\d+) anos/);
+  if (age) return `Só podem vir crianças até aos ${age[1]} anos.`;
+  if (/children_not_allowed/.test(m)) return "Os noivos não podem receber crianças neste casamento.";
+  if (/child_invalid/.test(m)) return "Indica o nome e a idade de cada criança.";
   if (error?.code === "23505") return "Este presente acabou de ser reservado por outra pessoa.";
   if (/Failed to fetch|NetworkError/i.test(m)) return "Sem ligação à internet. Verifica a rede e tenta outra vez.";
   return "Não foi possível guardar. Tenta outra vez.";
@@ -43,7 +50,7 @@ export function useGuest(weddingId: number) {
     }
     const { data } = await supabase
       .from("guests")
-      .select("id, full_name, rsvp_status, companions, message")
+      .select(GUEST_COLUMNS)
       .eq("wedding_id", weddingId)
       .eq("user_id", session.user.id)
       .maybeSingle<Guest>();
@@ -70,13 +77,14 @@ export function useGuest(weddingId: number) {
       const values = {
         full_name: answer.name,
         rsvp_status: answer.attending ? "attending" : "declined",
-        companions: answer.attending ? answer.companions : 0,
+        partner_name: answer.attending ? answer.partnerName : null,
+        children: answer.attending ? answer.children : [],
         message: answer.message || null,
       };
       const query = guest
         ? supabase.from("guests").update(values).eq("id", guest.id)
         : supabase.from("guests").insert({ ...values, wedding_id: weddingId, user_id: session.user.id });
-      const { data, error } = await query.select("id, full_name, rsvp_status, companions, message").single<Guest>();
+      const { data, error } = await query.select(GUEST_COLUMNS).single<Guest>();
       if (error) return friendlyError(error);
       setGuest(data);
       return null;

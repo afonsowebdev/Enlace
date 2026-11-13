@@ -15,14 +15,15 @@ type InvitationProps = {
   coupleNames: string;
   timeZone: string;
   rsvpDeadline: string | null;
-  maxCompanions: number;
+  /** Idade máxima das crianças; null = não são aceites crianças. */
+  maxChildAge: number | null;
   places: Place[];
   story: StoryMoment[];
   gifts: Gift[];
 };
 
 /** O percurso do convidado: história, onde, responder, oferecer, partilhar. */
-export function Invitation({ weddingId, coupleNames, timeZone, rsvpDeadline, maxCompanions, places, story, gifts }: InvitationProps) {
+export function Invitation({ weddingId, coupleNames, timeZone, rsvpDeadline, maxChildAge, places, story, gifts }: InvitationProps) {
   const { supabase, guest, loading, respond } = useGuest(weddingId);
 
   return (
@@ -43,14 +44,15 @@ export function Invitation({ weddingId, coupleNames, timeZone, rsvpDeadline, max
         ) : (
           <Rsvp
             key={guest?.id ?? "novo"}
-            maxCompanions={maxCompanions}
+            maxChildAge={maxChildAge}
             deadline={rsvpDeadline}
             response={
               guest && guest.rsvp_status !== "pending"
                 ? {
                     name: guest.full_name,
                     attending: guest.rsvp_status === "attending",
-                    companions: guest.companions,
+                    partnerName: guest.partner_name,
+                    children: guest.children,
                     message: guest.message ?? "",
                   }
                 : null

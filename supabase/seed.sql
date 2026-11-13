@@ -1,12 +1,12 @@
 -- Dados de exemplo para desenvolvimento local (npx supabase db reset).
 insert into public.weddings
   (slug, partner_one_name, partner_two_name, starts_at, venue_name, venue_address,
-   venue_latitude, venue_longitude, welcome_message, rsvp_deadline, max_companions)
+   venue_latitude, venue_longitude, welcome_message, rsvp_deadline, max_child_age)
 values
   ('maria-e-joao', 'Maria', 'João', '2027-06-12 16:00:00+01',
    'Mosteiro dos Jerónimos', 'Praça do Império 1400-206 Lisboa',
    38.6979, -9.2068,
-   'Vamos casar e queremos muito que estejas connosco.', '2027-05-15', 2);
+   'Vamos casar e queremos muito que estejas connosco.', '2027-05-15', 4);
 
 -- Artigos (reservados por um só convidado) e presentes em dinheiro (vários contribuem).
 -- price_cents: valor de referência do artigo, ou objetivo do presente em dinheiro (null = sem objetivo).

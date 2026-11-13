@@ -50,7 +50,7 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
     verse: w.verse_text ?? "",
     verseReference: w.verse_reference ?? "",
     deadline: w.rsvp_deadline ?? "",
-    maxCompanions: String(w.max_companions),
+    maxChildAge: w.max_child_age === null ? "" : String(w.max_child_age),
     holder: payment?.holder_name ?? "",
     iban: payment?.iban ? formatIban(payment.iban) : "",
     mbway: payment?.mbway_phone ? formatPhone(payment.mbway_phone) : "",
@@ -132,7 +132,7 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
         verse_text: f.verse.trim() || null,
         verse_reference: f.verse.trim() ? f.verseReference.trim() || null : null,
         rsvp_deadline: f.deadline || null,
-        max_companions: Math.max(0, Math.min(20, Number(f.maxCompanions) || 0)),
+        max_child_age: f.maxChildAge === "" ? null : Math.max(0, Math.min(17, Math.trunc(Number(f.maxChildAge)) || 0)),
         cover_photo_path: coverPath,
         music_path: musicPath,
       })
@@ -248,8 +248,8 @@ export function WeddingForm({ wedding: w, payment, coverUrl, musicUrl }: Props) 
           <Field label="Responder até" id="deadline" hint="Opcional.">
             <input id="deadline" type="date" className={input} value={f.deadline} onChange={set("deadline")} />
           </Field>
-          <Field label="Acompanhantes por convidado" id="maxCompanions" hint="0 a 20.">
-            <input id="maxCompanions" type="number" min={0} max={20} className={input} value={f.maxCompanions} onChange={set("maxCompanions")} />
+          <Field label="Idade máxima das crianças" id="maxChildAge" hint="Em anos (0 a 17). Deixem vazio para não aceitar crianças.">
+            <input id="maxChildAge" type="number" min={0} max={17} className={input} value={f.maxChildAge} onChange={set("maxChildAge")} />
           </Field>
         </div>
       </Card>

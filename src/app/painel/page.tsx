@@ -23,7 +23,7 @@ export default async function ResumoPage() {
     supabase.rpc("wedding_stats", { p_wedding_id: wedding.id }),
     supabase
       .from("guests")
-      .select("id, full_name, rsvp_status, companions, message, responded_at, created_at")
+      .select("id, full_name, rsvp_status, partner_name, children, companions, message, responded_at, created_at")
       .eq("wedding_id", wedding.id)
       .order("created_at", { ascending: false })
       .returns<GuestRow[]>(),
@@ -33,7 +33,7 @@ export default async function ResumoPage() {
   const days = Math.ceil((new Date(wedding.starts_at).getTime() - Date.now()) / 86_400_000);
 
   const cards = [
-    { label: "Pessoas confirmadas", value: n(s.people_attending), note: `${n(s.guests_attending)} convidados e acompanhantes` },
+    { label: "Pessoas confirmadas", value: n(s.people_attending), note: `${n(s.guests_attending)} convidados, com cônjuges e crianças` },
     { label: "Respostas", value: n(s.guests_total), note: `${n(s.guests_declined)} não podem ir` },
     { label: "Artigos reservados", value: `${n(s.items_reserved)} de ${n(s.items_total)}`, note: `${n(s.money_gifts_total)} presentes em dinheiro` },
     {
