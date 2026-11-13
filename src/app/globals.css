@@ -1,26 +1,205 @@
 @import "tailwindcss";
 
+/* Tokens — ver docs/DESIGN.md */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --papel: #f8f1e4; /* branco champanhe */
+  --tinta: #3b1a1f;
+  --vinho: #6b1c26;
+  --pedra: #7d5f61;
+  --nevoa: #e8dcc8;
+  --linho: #f3eadb;
+  --rubor: #f3e0dc;
+  --dourado: #b08a4f;
+  --sobre-vinho: #fbf7f0;
+  /* botões e destaques: vinho com texto champanhe, igual nos dois modos */
+  --cartao: #6b1c26;
+  --sobre-cartao: #fbf7f0;
+  /* o convite em si: papel champanhe com tinta vinho e filetes dourados */
+  --convite: #f6eddc;
+  --convite-luz: #fdf9f1;
+  --sobre-convite: #3b1a1f;
+  --petala: #e9c9c3;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --papel: #1d0d11;
+    --tinta: #f3e7e1;
+    --vinho: #e3a3ac;
+    --pedra: #bfa3a5;
+    --nevoa: #3a2228;
+    --linho: #2a151a;
+    --rubor: #331820;
+    --dourado: #d2ad6e;
+    --sobre-vinho: #1d0d11;
+    --cartao: #561620;
+    --sobre-cartao: #fbf7f0;
+    --convite: #efe3cc;
+    --convite-luz: #f8f0e2;
+    --sobre-convite: #3b1a1f;
+    --petala: #6e3a44;
+    color-scheme: dark;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root[data-theme="dark"] {
+  --papel: #1d0d11;
+  --tinta: #f3e7e1;
+  --vinho: #e3a3ac;
+  --pedra: #bfa3a5;
+  --nevoa: #3a2228;
+  --linho: #2a151a;
+  --rubor: #331820;
+  --dourado: #d2ad6e;
+  --sobre-vinho: #1d0d11;
+  --cartao: #561620;
+  --sobre-cartao: #fbf7f0;
+  --convite: #efe3cc;
+  --convite-luz: #f8f0e2;
+  --sobre-convite: #3b1a1f;
+  --petala: #6e3a44;
+  color-scheme: dark;
 }
+
+@theme inline {
+  --color-papel: var(--papel);
+  --color-tinta: var(--tinta);
+  --color-vinho: var(--vinho);
+  --color-pedra: var(--pedra);
+  --color-nevoa: var(--nevoa);
+  --color-linho: var(--linho);
+  --color-rubor: var(--rubor);
+  --color-dourado: var(--dourado);
+  --color-sobre-vinho: var(--sobre-vinho);
+  --color-cartao: var(--cartao);
+  --color-sobre-cartao: var(--sobre-cartao);
+  --color-convite: var(--convite);
+  --color-convite-luz: var(--convite-luz);
+  --color-sobre-convite: var(--sobre-convite);
+  --color-petala: var(--petala);
+
+  --font-display: var(--font-lamoric);
+  --font-sans: var(--font-poppins);
+
+  /* Escala ~1,333 sobre 17 px */
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.875rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3.3125rem;
+}
+
+html {
+  background: var(--papel);
+}
+
+body {
+  /* transparente: o fundo fica no <html>, para o Backdrop (z negativo) se ver */
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--vinho);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--linho);
+  color: var(--tinta);
+}
+
+/* Pétalas a cair devagar pelo fundo (ver Backdrop). */
+.petala {
+  position: absolute;
+  top: -6vh;
+  animation: petala-cair var(--dur, 18s) linear var(--atraso, 0s) infinite;
+  will-change: transform;
+}
+@keyframes petala-cair {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate3d(var(--deriva, 40px), 55vh, 0) rotate(200deg); }
+  92% { opacity: 1; }
+  100% { transform: translate3d(calc(var(--deriva, 40px) * -0.6), 112vh, 0) rotate(400deg); opacity: 0; }
+}
+
+/* Flores a respirar: balançam um pouco, como ao vento. */
+.balancar {
+  animation: balancar 9s ease-in-out infinite alternate;
+  transform-origin: var(--origem, 50% 100%);
+}
+@keyframes balancar {
+  from { transform: rotate(-1.6deg); }
+  to { transform: rotate(1.8deg); }
+}
+
+/* Brilho dourado que passa pelo "&" de vez em quando. */
+.brilho {
+  background: linear-gradient(110deg, var(--dourado) 35%, #f3dfae 50%, var(--dourado) 65%) 0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brilho 6s ease-in-out 2.5s infinite;
+}
+@keyframes brilho {
+  0%, 60% { background-position: 100% 0; }
+  100% { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petala { display: none; }
+  .balancar, .brilho { animation: none; }
+}
+
+/* Cartões de papel (convite, resposta, locais): sempre com as cores claras. */
+.papel-claro {
+  --papel: #f8f1e4;
+  --tinta: #3b1a1f;
+  --vinho: #6b1c26;
+  --pedra: #7d5f61;
+  --nevoa: #e3d4bc;
+  --linho: #f3eadb;
+  --dourado: #a8803f;
+  --petala: #e9c9c3;
+  color: var(--tinta);
+  color-scheme: light;
+}
+.papel-claro .grao {
+  opacity: 0.09 !important;
+  mix-blend-mode: normal !important;
+}
+.papel-claro .mapa-papel .leaflet-tile-pane {
+  filter: grayscale(1) sepia(0.45) saturate(0.9) brightness(1.03) !important;
+}
+
+/* Mapa em tons sépia, para combinar com o papel. */
+.mapa-papel .leaflet-tile-pane {
+  filter: grayscale(1) sepia(0.45) saturate(0.9) brightness(1.03);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mapa-papel .leaflet-tile-pane {
+    filter: grayscale(1) invert(1) sepia(0.6) hue-rotate(300deg) brightness(0.75) contrast(0.9);
+  }
+}
+.mapa-papel .leaflet-container {
+  background: var(--linho);
+  font-family: inherit;
+}
+
+/* Grão de papel: textura subtil por cima do fundo. */
+.grao {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.30 0 0 0 0 0.16 0 0 0 0 0.12 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.09;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .grao { opacity: 0.12; mix-blend-mode: screen; }
+}
+

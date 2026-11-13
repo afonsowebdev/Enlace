@@ -53,7 +53,6 @@ beforeEach(async () => {
     [weddingId],
   );
   moneyGiftId = m.rows[0].id;
-  await db.query(`update weddings set max_companions = 2 where id = $1`, [weddingId]);
 });
 
 describe("convite público", () => {
@@ -267,16 +266,28 @@ describe("presentes em dinheiro", () => {
     );
   }
 
-  it("vários convidados contribuem para o mesmo presente e a lista mostra o total", async () => {
+  it("vários convidados contribuem para o mesmo presente e a base de dados soma o total", async () => {
     const ana = await registerGuest(ANA, "Ana Silva");
     const rui = await registerGuest(RUI, "Rui Costa");
     await contribute(ANA, ana, 5000);
     await contribute(RUI, rui, 7500);
     await contribute(ANA, ana, 2500);
-    const r = await asAnon(db, (tx) =>
-      tx.query(`select contributed_cents from gifts where id = $1`, [moneyGiftId]),
-    );
+    const r = await db.query(`select contributed_cents from gifts where id = $1`, [moneyGiftId]);
     expect(r.rows[0]).toEqual({ contributed_cents: 15000 });
+  });
+
+  it("ninguém lê pela API quanto já foi oferecido; a lista continua pública", async () => {
+    const ana = await registerGuest(ANA, "Ana Silva");
+    await contribute(ANA, ana, 5000);
+    const total = `select contributed_cents from gifts where id = ${moneyGiftId}`;
+    await expect(asAnon(db, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asUser(db, ANA, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asUser(db, NOIVO, (tx) => tx.query(total))).rejects.toThrow(/permission denied/);
+    await expect(asAnon(db, (tx) => tx.query(`select * from gifts`))).rejects.toThrow(/permission denied/);
+    const list = await asAnon(db, (tx) =>
+      tx.query(`select name, kind, price_cents, is_reserved from gifts where id = $1`, [moneyGiftId]),
+    );
+    expect(list.rows).toEqual([{ name: "Voo da lua de mel", kind: "money", price_cents: 150000, is_reserved: false }]);
   });
 
   it("cada convidado vê só as suas contribuições; os noivos veem todas", async () => {
@@ -350,29 +361,64 @@ describe("dados de pagamento dos noivos", () => {
   });
 });
 
-describe("acompanhantes", () => {
-  it("o convidado confirma com acompanhantes até ao máximo definido pelos noivos", async () => {
+describe("acompanhantes: cônjuge e crianças", () => {
+  const confirm = (sql: string) => asUser(db, ANA, (tx) => tx.query(sql));
+
+  it("o convidado confirma em casal, com o nome do cônjuge; conta como acompanhante", async () => {
     await registerGuest(ANA, "Ana Silva");
-    const r = await asUser(db, ANA, (tx) =>
-      tx.query(`update guests set rsvp_status = 'attending', companions = 2 returning companions`),
+    const r = await confirm(
+      `update guests set rsvp_status = 'attending', partner_name = '  Pedro Silva ' returning partner_name, companions`,
     );
-    expect(r.rows[0]).toEqual({ companions: 2 });
+    expect(r.rows[0]).toEqual({ partner_name: "Pedro Silva", companions: 1 });
   });
 
-  it("não é possível trazer mais acompanhantes do que o máximo", async () => {
+  it("aceita crianças até aos 4 anos (idade máxima por defeito)", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    const r = await confirm(
+      `update guests set rsvp_status = 'attending', partner_name = 'Pedro Silva',
+         children = '[{"name": " Leonor ", "age": 0}, {"name": "Tomás", "age": 4}]'
+       returning children, companions`,
+    );
+    expect(r.rows[0]).toEqual({
+      children: [{ name: "Leonor", age: 0 }, { name: "Tomás", age: 4 }],
+      companions: 3,
+    });
+  });
+
+  it("recusa crianças acima da idade máxima", async () => {
     await registerGuest(ANA, "Ana Silva");
     await expect(
-      asUser(db, ANA, (tx) => tx.query(`update guests set rsvp_status = 'attending', companions = 3`)),
-    ).rejects.toThrow(/companions_exceed_limit/);
+      confirm(`update guests set rsvp_status = 'attending', children = '[{"name": "Rita", "age": 5}]'`),
+    ).rejects.toThrow(/child_too_old/);
   });
 
-  it("ao recusar o convite, os acompanhantes passam a zero", async () => {
+  it("recusa crianças sem nome, com idade inválida ou mal formadas", async () => {
     await registerGuest(ANA, "Ana Silva");
-    await asUser(db, ANA, (tx) => tx.query(`update guests set rsvp_status = 'attending', companions = 2`));
-    const r = await asUser(db, ANA, (tx) =>
-      tx.query(`update guests set rsvp_status = 'declined' returning companions`),
+    for (const c of [`[{"name": " ", "age": 2}]`, `[{"name": "Rita", "age": 1.5}]`, `[{"name": "Rita", "age": -1}]`, `[{"name": "Rita", "age": "2"}]`, `["Rita"]`]) {
+      await expect(confirm(`update guests set rsvp_status = 'attending', children = '${c}'`)).rejects.toThrow(/child_invalid/);
+    }
+  });
+
+  it("sem idade máxima definida, o casamento não aceita crianças", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    await db.query(`update weddings set max_child_age = null where id = $1`, [weddingId]);
+    await expect(
+      confirm(`update guests set rsvp_status = 'attending', children = '[{"name": "Leonor", "age": 1}]'`),
+    ).rejects.toThrow(/children_not_allowed/);
+  });
+
+  it("o convidado não escreve o número de acompanhantes diretamente", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    await expect(confirm(`update guests set companions = 5`)).rejects.toThrow(/permission denied/);
+  });
+
+  it("ao recusar o convite, cônjuge e crianças são apagados", async () => {
+    await registerGuest(ANA, "Ana Silva");
+    await confirm(
+      `update guests set rsvp_status = 'attending', partner_name = 'Pedro Silva', children = '[{"name": "Leonor", "age": 2}]'`,
     );
-    expect(r.rows[0]).toEqual({ companions: 0 });
+    const r = await confirm(`update guests set rsvp_status = 'declined' returning partner_name, children, companions`);
+    expect(r.rows[0]).toEqual({ partner_name: null, children: [], companions: 0 });
   });
 });
 
@@ -381,7 +427,7 @@ describe("estatísticas do painel", () => {
     const ana = await registerGuest(ANA, "Ana Silva");
     const rui = await registerGuest(RUI, "Rui Costa");
     await asUser(db, ANA, (tx) =>
-      tx.query(`update guests set rsvp_status = 'attending', companions = 1 where user_id = $1`, [ANA]),
+      tx.query(`update guests set rsvp_status = 'attending', partner_name = 'Pedro Silva' where user_id = $1`, [ANA]),
     );
     await asUser(db, ANA, (tx) =>
       tx.query(`insert into gift_reservations (wedding_id, gift_id, guest_id) values ($1, $2, $3)`, [weddingId, giftId, ana]),

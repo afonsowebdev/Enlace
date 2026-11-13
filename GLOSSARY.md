@@ -13,8 +13,16 @@ Pessoa que abriu o convite e se registou com o seu nome.
 _Avoid_: Visitante, utilizador, participante
 
 **Acompanhante**:
-Pessoa que vem ao casamento com um convidado confirmado, sem registo próprio. Os noivos definem quantos acompanhantes cada convidado pode trazer.
+Pessoa que vem ao casamento com um convidado confirmado, sem registo próprio: o cônjuge ou uma criança.
 _Avoid_: +1, convidado extra, plus-one
+
+**Cônjuge**:
+A esposa ou o esposo de um convidado que vem em casal. O convidado indica o nome.
+_Avoid_: Par, parceiro, mais-um
+
+**Criança**:
+Acompanhante com nome e idade. Só vêm crianças até à idade máxima definida pelos noivos (por defeito 4 anos).
+_Avoid_: Menor, filho, bebé (quando se fala de todas)
 
 ## Casamento
 
@@ -29,6 +37,10 @@ _Avoid_: Site, landing page, cartão
 **Local**:
 O sítio onde decorre o casamento, identificado por nome e morada e mostrado num mapa.
 _Avoid_: Venue, endereço (quando se fala do sítio todo), localização
+
+**Versículo**:
+Texto bíblico opcional que os noivos mostram no cartão do convite, com a sua referência (ex.: Mateus 19:5-6).
+_Avoid_: Citação, frase, passagem
 
 ## Resposta ao convite
 
