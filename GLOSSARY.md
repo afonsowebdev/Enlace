@@ -8,6 +8,10 @@ Site onde um casal convida os seus convidados, partilha os detalhes da cerimóni
 As duas pessoas que se casam e que gerem o convite.
 _Avoid_: Casal (como papel), anfitriões, administradores, donos
 
+**Link de entrega**:
+Link de uso único com que quem preparou o convite passa o casamento para a conta dos noivos. Ao usá-lo, os noivos criam a conta e ficam como únicos noivos.
+_Avoid_: Convite de acesso, transferência, partilha
+
 **Convidado**:
 Pessoa que abriu o convite e se registou com o seu nome.
 _Avoid_: Visitante, utilizador, participante

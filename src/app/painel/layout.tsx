@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { NoticePage } from "@/components/notice-page";
 import { CreateWedding } from "@/components/painel/create-wedding";
-import { FirstAccess } from "@/components/painel/first-access";
-import { MUST_CHANGE_CREDENTIALS } from "@/lib/handover";
 import { PainelNav } from "@/components/painel/painel-nav";
 import { SignOutButton } from "@/components/painel/sign-out-button";
 import { supabaseConfig } from "@/lib/env";
@@ -20,11 +18,6 @@ export default async function PainelLayout({ children }: { children: React.React
     );
   }
   const { user, wedding } = await requireHost();
-
-  // Conta preparada por Francisco Afonso: os noivos trocam o email e a palavra-passe antes de tudo.
-  if (user.user_metadata?.[MUST_CHANGE_CREDENTIALS]) {
-    return <FirstAccess currentEmail={user.email ?? ""} partnerOneName={wedding?.partner_one_name} partnerTwoName={wedding?.partner_two_name} />;
-  }
 
   return (
     <div className="min-h-dvh">
