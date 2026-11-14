@@ -1,29 +1,71 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-/** Botão flutuante da música. Os browsers não deixam tocar sozinha: começa quando o convidado carrega. */
+const GESTURES = ["pointerdown", "touchend", "keydown", "click"] as const;
+
+/**
+ * Música do convite. Tenta tocar logo que o convite abre; se o browser não
+ * deixar (sem interação não há som), começa ao primeiro toque, clique ou tecla
+ * do convidado. O botão flutuante pausa e retoma.
+ */
 export function MusicToggle({ src }: { src: string | null }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const pausedByGuest = useRef(false);
   const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!src || !audio) return;
+
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+
+    const stopListening = () => GESTURES.forEach((g) => window.removeEventListener(g, onGesture, true));
+    function onGesture(e: Event) {
+      // O botão da música decide sozinho (tocar ou pausar).
+      if (buttonRef.current?.contains(e.target as Node)) return;
+      stopListening();
+      if (!pausedByGuest.current && audio!.paused) audio!.play().catch(() => {});
+    }
+
+    audio.volume = 0.6;
+    audio.play().catch(() => {
+      // Bloqueado pelo browser: espera pela primeira interação.
+      GESTURES.forEach((g) => window.addEventListener(g, onGesture, { capture: true, passive: true }));
+    });
+
+    return () => {
+      stopListening();
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.pause();
+    };
+  }, [src]);
 
   if (!src) return null;
 
   function toggle() {
     const audio = audioRef.current;
     if (!audio) return;
-    if (audio.paused) audio.play().then(() => setPlaying(true)).catch(() => {});
-    else {
+    if (audio.paused) {
+      pausedByGuest.current = false;
+      audio.play().catch(() => {});
+    } else {
+      pausedByGuest.current = true;
       audio.pause();
-      setPlaying(false);
     }
   }
 
   return (
     <>
-      <audio ref={audioRef} src={src} loop preload="none" />
+      <audio ref={audioRef} src={src} loop preload="auto" playsInline />
       <button
         type="button"
+        ref={buttonRef}
         onClick={toggle}
         aria-pressed={playing}
         aria-label={playing ? "Pausar a música" : "Tocar a música"}
